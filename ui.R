@@ -4,11 +4,10 @@ library(shiny)
 source("indiana-hiv-load.R")
 source("indiana-hiv-util.R")
 
-# Define UI for application that plots random distributions 
-
-
 ui = fluidPage(
-  titlePanel("Dynamics of the HIV Outbreak and response in Scott County, Indiana 2011-2015"),
+  # title: 
+  titlePanel("Dynamics of the HIV outbreak and response in Scott County, Indiana 2011-2015"),
+  # sidebar: 
   sidebarLayout(
     sidebarPanel(
       tabsetPanel(type="tabs", 
@@ -16,10 +15,11 @@ ui = fluidPage(
           includeMarkdown("content/instructions.md"),
           hr(),
           radioButtons("scenario", "Intervention scenarios",
-                       c("Actual"="actual",
+                       c("Early"="early",
                          "Intermediate"="mid",
-                         "Early"="early"),
-                       inline=TRUE),
+                         "Actual"="actual"),
+                       inline=TRUE,
+                       selected="actual"),
           sliderInput(inputId="intvxday", 
             label="Intervention scale-up dates", 
             min = zerodate+2,
@@ -54,12 +54,9 @@ ui = fluidPage(
         )
       )
       ),
+  # main panel
   mainPanel(
-    verticalLayout(
-      plotOutput("dxPlot", height="200px"),
-      plotOutput("transmissionRatePlot", height="200px"),
-      plotOutput("epidemicPlot", height="400px")
-      )
+      plotOutput("epidemicPlot", height="800px")
     )
   ),
   hr(),

@@ -362,11 +362,11 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
   #dxrate_hi = mean(dxrate_hi_smooth[days_to_first_dx:ndays])
   #dxrate_mid = mean(c(dxrate_lo, dxrate_hi))
 
-  incidencerate_lo = sum(diff(dx))/(sum(Iudx_hi * S_hi))
-  incidencerate_hi = sum(diff(dx))/(sum(Iudx_lo * S_lo))
+  incidencerate_lo = sum(diff(I_lo))/(sum(Iudx_hi * S_hi))
+  incidencerate_hi = sum(diff(I_hi))/(sum(Iudx_lo * S_lo))
   #incidencerate_mid = mean(c(incidencerate_lo, incidencerate_hi))
 
-  #cat("avg incidencerate = (", incidencerate_lo, ", ", incidencerate_hi, ")\n", sep="")
+  cat("avg incidencerate = (", incidencerate_lo, ", ", incidencerate_hi, ")\n", sep="")
   #e1 = S_hi_smooth %*% Iudx_hi_smooth #I_hi_smooth 
   #e2 = S_lo_smooth %*% Iudx_hi_smooth #I_hi_smooth 
   #e3 = S_hi_smooth %*% Iudx_lo_smooth #I_lo_smooth 
@@ -488,8 +488,9 @@ plot_infections_by_N = function(constFOI=FALSE) {
   smooth_S    = smoothers[[1]]$Srange[2]
   smoother = smoothernames[1]
   
-  my_daily_timescale = c(2, mdy("01/01/2013")-zerodate, begindate-zerodate) 
-  mycols = gray(c(0,0.2,0.8), alpha=0.5)
+  my_daily_timescale = rev(c(2, mdy("01/01/2013")-zerodate, begindate-zerodate) )
+  a = 0.3
+  mycols = rev(c(rgb(1,0,0,alpha=0.9), rgb(0,1,0,alpha=a), rgb(0,0,1,alpha=a)))
 
   Ns = seq(215,4000,length.out=50)
 
@@ -499,7 +500,9 @@ plot_infections_by_N = function(constFOI=FALSE) {
 
   par(mar=c(4.0,4.5,1,1.0), bty="n", cex.lab=1.2, cex.axis=1.2)
 
-  plot(0, type="n", ylim=c(0,450), xlim=c(0,max(Ns)), ylab="Projected HIV infections by October 2015", xlab="Population size N", lwd=2)
+  ymax = ifelse(constFOI,480,300)
+
+  plot(0, type="n", ylim=c(0,ymax), xlim=c(0,max(Ns)), ylab="Projected HIV infections by October 2015", xlab="Population size N", lwd=2)
 
   for(j in 1:length(my_daily_timescale)) {
     for(i in 1:length(Ns)) {
@@ -518,8 +521,8 @@ plot_infections_by_N = function(constFOI=FALSE) {
   points(4000, max(dx), pch=16, cex=1.5)
   text(4000, max(dx),   paste("Actual infections:", max(dx)), pos=2)
 
-  legend(3000,450, paste("Intervention on", c(zerodate+2, mdy("01/01/2013"), begindate)), 
-         pch=22, pt.cex=2, cex=text_cex, pt.bg=mycols, bty="n", title="Counterfactual intervention date")
+  legend(2900,ymax, paste("Intervention on", c(zerodate+2, mdy("01/01/2013"), begindate)), 
+         pch=22, pt.cex=2, cex=1, pt.bg=mycols, bty="n")
 
 
 }
@@ -752,6 +755,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc) {
 
   res = list(Iend_lo=I_lo[ndays], Iend_hi=I_hi[ndays])
   return(res)
+
 
 
   #abline(v=intvxday)

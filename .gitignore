@@ -1,0 +1,6 @@
+*.swp
+cache
+*aux
+*log
+rsconnect
+.__packages

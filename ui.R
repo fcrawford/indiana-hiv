@@ -50,13 +50,19 @@ ui = fluidPage(
                       min=smoothers[[1]]$Srange[1], max=smoothers[[1]]$Srange[3], value=smoothers[[1]]$Srange[2])
         ),
         tabPanel("About", 
-          includeMarkdown("content/about.md")
+          includeMarkdown("content/about.md"),
+          hr(),
+          h3("Data"),
+          verticalLayout(
+            downloadLink("downloadDiagnoses", "Diagnoses by week"), 
+            downloadLink("downloadIncidence", "Estimated cumulative incidence from the CDC") 
+          )
         )
       )
       ),
   # main panel
   mainPanel(
-      plotOutput("epidemicPlot", height="800px")
+      plotOutput("epidemicPlot", height="700px")
     )
   ),
   hr(),

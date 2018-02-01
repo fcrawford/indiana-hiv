@@ -12,16 +12,10 @@ Peters, Philip J., et al. "HIV infection linked to injection use of oxymorphone 
 
 Campbell, Ellsworth M., et al. "Detailed Transmission Network Analysis of a Large Opiate-Driven Outbreak of HIV Infection in the United States." The Journal of Infectious Diseases (2017).
 
-### Data
-
-[Diagnoses by week](data/scott_county_cases_by_week.csv)
-
-[Estimated cumulative incidence from the CDC](data/simplistic_simResults.csv)
 
 ### Code
 
 Built with [R](http://www.r-project.org) and the [Shiny framework](http://shiny.rstudio.com).  The source code is freely available on [GitHub](https://github.com/fcrawford/indiana-hiv).
 
 
-Copyright 2017 by [Gregg Gonsalves](http://publichealth.yale.edu/biostat/gregg_gonsalves.profile) and [Forrest W. Crawford](http://www.crawfordlab.io).
 

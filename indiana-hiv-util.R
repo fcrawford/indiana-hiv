@@ -366,7 +366,7 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
   incidencerate_hi = sum(diff(I_hi))/(sum(Iudx_lo * S_lo))
   #incidencerate_mid = mean(c(incidencerate_lo, incidencerate_hi))
 
-  cat("avg incidencerate = (", incidencerate_lo, ", ", incidencerate_hi, ")\n", sep="")
+  #cat("avg incidencerate = (", incidencerate_lo, ", ", incidencerate_hi, ")\n", sep="")
   #e1 = S_hi_smooth %*% Iudx_hi_smooth #I_hi_smooth 
   #e2 = S_lo_smooth %*% Iudx_hi_smooth #I_hi_smooth 
   #e3 = S_hi_smooth %*% Iudx_lo_smooth #I_lo_smooth 

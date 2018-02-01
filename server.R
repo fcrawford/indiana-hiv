@@ -63,5 +63,24 @@ shinyServer(function(input, output, session) {
     get_indiana_results_text(input$N, input$intvxday[1], input$intvxday[2], input$smooth_dx, input$smooth_Iudx, input$smooth_I, input$smooth_S, 
                              input$constFOI, input$smoother)
   })
+
+  output$downloadDiagnoses <- downloadHandler(
+    filename = function() {
+      "scott_county_cases_by_week.csv"
+    },
+    content = function(file) {
+      file.copy("data/scott_county_cases_by_week.csv", file)
+    }
+  )
+
+  output$downloadIncidence <- downloadHandler(
+    filename = function() {
+      "incidence.csv"
+    },
+    content = function(file) {
+      file.copy("data/simplistic_simResults.csv", file)
+    }
+  )
+
 })
 

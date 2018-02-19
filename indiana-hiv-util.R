@@ -1,4 +1,5 @@
 library(splines)
+source("indiana-hiv-load.R")
 
 
 #############
@@ -161,6 +162,7 @@ plot_methods_illustration = function(constFOI=FALSE) {
            col=c(mydarkgray, "blue"),
            pt.bg=c(mydarkgray, NA),
            bg="white", bty="n", cex=text_cex)
+  mtext("A", side=3, adj=0, line=-1.2, cex=2)
   
   plot(daily_timescale, dx, 
        type="n",
@@ -185,6 +187,7 @@ plot_methods_illustration = function(constFOI=FALSE) {
            col=c("red", "red", "blue"),
            pt.bg=c(mydarkred, myred, NA), 
            bg="white", bty="n", cex=text_cex)
+  mtext("B", side=3, adj=0, line=-1.2, cex=2)
 
   ymax = 1.2*max(dxrate_hi_smooth)
   plot(daily_timescale, dx, 
@@ -219,6 +222,7 @@ plot_methods_illustration = function(constFOI=FALSE) {
            col=c("black"),
            pt.bg=c(mygray),
            bg="white", bty="n", cex=text_cex)
+  mtext("C", side=3, adj=0, line=-1.2, cex=2)
 
 
 
@@ -246,6 +250,7 @@ plot_methods_illustration = function(constFOI=FALSE) {
          days_to_dday, obj2$dxrate_hi_smooth2[daily_timescale==days_to_dday], length=0.05)
   text(days_to_dday, ymax,
        "Target diagnostic scaleup", pos=2, cex=text_cex, offset=0.3)
+  mtext("D", side=3, adj=0, line=-1.2, cex=2)
 
   # detail plot
   
@@ -294,6 +299,18 @@ plot_methods_illustration = function(constFOI=FALSE) {
            days_to_sep_started, Iudx_hi[daily_timescale==days_to_sep_started], length=0.05)
     text(days_to_sep_started, ymax*0.5,
          "SEP Begins", pos=4, cex=text_cex, offset=0.3)
+
+    legend(1200, 120,
+           "Undiagnosed HIV+ (actual)",
+           border="red",
+           lty=0,
+           pch=22,
+           pt.cex=3,
+           col="red",
+           pt.bg=mydarkred,
+           bg="white", bty="n", cex=text_cex)
+
+  mtext("E", side=3, adj=0, line=-2, cex=2)
   
 }
 

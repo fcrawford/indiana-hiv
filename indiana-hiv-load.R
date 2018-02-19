@@ -3,11 +3,11 @@ library(lubridate)
 ##########################
 # important dates:
 
-first_dx = mdy("11/18/2014")
+first_dx            = mdy("11/18/2014")
 investigation_begin = mdy("01/23/2015")
-emergency_declared = mdy("03/26/2015")
-clinic_opened = mdy("03/31/2015")
-sep_started = mdy("04/04/2015")
+emergency_declared  = mdy("03/26/2015")
+clinic_opened       = mdy("03/31/2015")
+sep_started         = mdy("04/04/2015")
 
 
 #######################

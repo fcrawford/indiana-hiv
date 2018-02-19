@@ -28,20 +28,28 @@ smoothers = list(list(name="spline",
 
 smoothernames = unlist(lapply(smoothers,function(s)s$name))
 
-
+make_transparent = function(col,a=1) {
+  obj = col2rgb(col)
+  rgb(obj[1]/255, obj[2]/255, obj[3]/255, alpha=a)
+}
 
 text_cex = 1.7
 
-myred   = rgb(1,0,0,alpha=0.2)
-mygreen = rgb(0,1,0,alpha=0.2)
-myblue  = rgb(0,0,1,alpha=0.2)
-mygray  = rgb(0,0,0,alpha=0.1)
+Reds   = brewer.pal(n=9, "Reds")
+Greens = brewer.pal(n=9, "Greens")
+Blues  = brewer.pal(n=9, "Blues")
+Greys  = brewer.pal(n=9, "Greys")
+
+myred   = make_transparent(Reds[6], 0.5)
+mygreen = make_transparent(Greens[7], 0.5)
+myblue  = make_transparent(Blues[6], 0.5)
+mygray  = make_transparent(Greys[6], 0.5)
 
 
-mydarkred   = rgb(1,0,0,alpha=0.8)
-mydarkgreen = rgb(0,1,0,alpha=0.8)
-mydarkblue  = rgb(0,0,1,alpha=0.8)
-mydarkgray  = rgb(0,0,0,alpha=0.3)
+mydarkred   = make_transparent(Reds[5],   0.8)
+mydarkgreen = make_transparent(Greens[5], 0.7)
+mydarkblue  = make_transparent(Blues[7],  1)
+mydarkgray  = make_transparent(Greys[5],  0.7)
 
 
 
@@ -328,6 +336,12 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
   intvxday = as.numeric(intvxday - zerodate)
   dday = as.numeric(dday - zerodate)
 
+
+  # distinguish between date (input) and day (indexing)
+  # distinguish between actual dates/days and counterfactual dates/days
+  # distinguish between raw data, smoothed raw data, and counterfactual projections
+  # REMOVE time-varying beta estimation. 
+
   smooth_method = smoothers[[which(smoothernames==smoother)]]$f
 
   I_hi = calibration_hi
@@ -389,6 +403,25 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
     beta_hi = c(0,diff(I_hi_smooth))/e_lo
     beta_hi[beta_hi<=0] = 0
   }
+
+
+   ###############
+   # test: estimate variable transmission rate 
+   beta_lo = rep(NA,ndays)
+   beta_hi = rep(NA,ndays)
+
+   beta_lo[1:intvxday] = sum(diff(I_lo_smooth[1:intvxday])) / 
+                           sum(Iudx_hi_smooth[1:intvxday] * S_hi_smooth[1:intvxday])
+   beta_hi[1:intvxday] = sum(diff(I_hi_smooth[1:intvxday])) / 
+                           sum(Iudx_lo_smooth[1:intvxday] * S_lo_smooth[1:intvxday])
+
+   beta_lo[(intvxday+1):ndays] = sum(diff(I_lo_smooth[(intvxday+1):ndays])) / 
+                                   sum(Iudx_hi_smooth[(intvxday+1):ndays] * S_hi_smooth[(intvxday+1):ndays])
+   beta_hi[(intvxday+1):ndays] = sum(diff(I_hi_smooth[(intvxday+1):ndays])) / 
+                                   sum(Iudx_lo_smooth[(intvxday+1):ndays] * S_lo_smooth[(intvxday+1):ndays])
+
+   ###############
+   ###############
 
 
 
@@ -716,13 +749,13 @@ plot_epidemic_curves = function(obj, showDates, showSusc) {
   polygon(c(daily_timescale,rev(daily_timescale)), c(Iudx_lo,rev(Iudx_hi)), col=mydarkred, border=mydarkred)
   if(showSusc) polygon(c(daily_timescale,rev(daily_timescale)), c(S_lo,rev(S_hi)), col=mydarkgreen, border=mydarkgreen)
   polygon(c(daily_timescale,rev(daily_timescale)), c(I_lo,rev(I_hi)), col=mydarkgray, border=mydarkgray)
-  lines(daily_timescale, dx, lwd=2, col="blue")
+  lines(daily_timescale, dx, lwd=2, col=mydarkblue)
 
   # projected
-  if(showSusc) polygon(c(daily_timescale,rev(daily_timescale)), c(S_lo2,rev(S_hi2)), col=mygreen, border="green")
-  polygon(c(daily_timescale,rev(daily_timescale)), c(Iudx_lo2,rev(Iudx_hi2)), col=myred, border="red")
-  polygon(c(daily_timescale,rev(daily_timescale)), c(I_lo2,rev(I_hi2)), col=mygray, border="gray")
-  polygon(c(daily_timescale,rev(daily_timescale)), c(Idx_lo2,rev(Idx_hi2)), col=myblue, border="blue")
+  if(showSusc) polygon(c(daily_timescale,rev(daily_timescale)), c(S_lo2,rev(S_hi2)), col=mygreen, border=mygreen)
+  polygon(c(daily_timescale,rev(daily_timescale)), c(I_lo2,rev(I_hi2)), col=mygray, border=mygray)
+  polygon(c(daily_timescale,rev(daily_timescale)), c(Iudx_lo2,rev(Iudx_hi2)), col=myred, border=myred)
+  polygon(c(daily_timescale,rev(daily_timescale)), c(Idx_lo2,rev(Idx_hi2)), col=myblue, border=myblue)
 
 
   if(showDates) {

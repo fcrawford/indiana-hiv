@@ -55,13 +55,13 @@ shinyServer(function(input, output, session) {
   output$epidemicPlot <- renderPlot({
     if(input$intvxday[1]<=begindate)  {
       plot_indiana_bounds(input$N, input$intvxday[1], input$intvxday[2], input$showDates, input$smooth_dx, 
-                          input$smooth_Iudx, input$smooth_I, input$smooth_S, input$constFOI, input$showSusc, input$smoother)
+                          input$smooth_Iudx, input$smooth_I, input$smooth_S, input$showSusc, input$smoother, 
+                          input$removal_proportion)
     }
   })
 
   output$results <- renderText({
-    get_indiana_results_text(input$N, input$intvxday[1], input$intvxday[2], input$smooth_dx, input$smooth_Iudx, input$smooth_I, input$smooth_S, 
-                             input$constFOI, input$smoother)
+    get_indiana_results_text(input$N, input$intvxday[1], input$intvxday[2], input$smooth_dx, input$smooth_Iudx, input$smooth_I, input$smooth_S, input$smoother, input$removal_proportion)
   })
 
   output$downloadDiagnoses <- downloadHandler(

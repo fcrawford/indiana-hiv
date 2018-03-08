@@ -1,5 +1,6 @@
 
 library(shiny)
+library(markdown)
 
 source("indiana-hiv-load.R")
 source("indiana-hiv-util.R")
@@ -36,8 +37,9 @@ ui = fluidPage(
         ),
         tabPanel("Settings",
           hr(),
-          checkboxInput("constFOI", "Constant FOI", value=FALSE),
+          #checkboxInput("constFOI", "Constant FOI", value=FALSE),
           sliderInput(inputId="N", "Risk population size", min = 215, max = 4000, value = 536),
+          sliderInput(inputId="removal_proportion", "Removal proportion", min=0, max=1, value = 1),
           actionButton("reset", "Reset smoothers"),
           selectInput("smoother", "Smoother", choices=smoothernames),
           sliderInput("smooth_dx", "Diagnosis smoother", step=smoothers[[1]]$step,

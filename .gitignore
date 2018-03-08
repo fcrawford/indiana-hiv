@@ -4,3 +4,5 @@ cache
 *log
 rsconnect
 .__packages
+*.pdf
+*.png

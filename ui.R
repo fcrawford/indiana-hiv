@@ -13,9 +13,9 @@ ui = fluidPage(
     sidebarPanel(
       tabsetPanel(type="tabs", 
         tabPanel("Main",
-          includeMarkdown("content/instructions.md"),
+          #includeMarkdown("content/instructions.md"),
           hr(),
-          radioButtons("scenario", "Intervention scenarios",
+          radioButtons("scenario", "Intervention date scenarios",
                        c("Early"="early",
                          "Intermediate"="mid",
                          "Actual"="actual"),
@@ -28,7 +28,20 @@ ui = fluidPage(
             value = c(begindate,enddate),
             dragRange=TRUE),
           hr(),
+          radioButtons("removal_scenario", "Removal scenarios",
+                       c("Low"="low",
+                         "Moderate"="moderate",
+                         "High"="high"),
+                       inline=TRUE,
+                       selected="moderate"),
+          sliderInput(inputId="removal_rate", "Removal rate", min=0, max=0.1, value=0.05),
+          hr(),
           h4("Display"),
+          radioButtons("plotType", "Plot type", 
+                       c("Raw Data"="raw",
+                         "Model Compartments"="model"),
+                       inline=TRUE,
+                       selected="raw"),
           checkboxInput("showDates", "Show actual response dates", value=FALSE),
           checkboxInput("showSusc", "Show susceptible population", value=FALSE),
           hr(),
@@ -39,7 +52,6 @@ ui = fluidPage(
           hr(),
           #checkboxInput("constFOI", "Constant FOI", value=FALSE),
           sliderInput(inputId="N", "Risk population size", min = 215, max = 4000, value = 536),
-          sliderInput(inputId="removal_proportion", "Removal proportion", min=0, max=1, value = 1),
           actionButton("reset", "Reset smoothers"),
           selectInput("smoother", "Smoother", choices=smoothernames),
           sliderInput("smooth_dx", "Diagnosis smoother", step=smoothers[[1]]$step,
@@ -59,9 +71,12 @@ ui = fluidPage(
             downloadLink("downloadDiagnoses", "Diagnoses by week"), 
             downloadLink("downloadIncidence", "Estimated cumulative incidence from the CDC") 
           )
+        ),
+        tabPanel("Help",
+          includeMarkdown("content/instructions.md")
         )
       )
-      ),
+    ),
   # main panel
   mainPanel(
       plotOutput("epidemicPlot", height="700px")

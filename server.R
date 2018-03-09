@@ -29,6 +29,19 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "intvxday", value=c(d1, d2))
   })
 
+  observe({ 
+    if(input$removal_scenario == "low") {
+      v = 0.01
+    } else if(input$removal_scenario == "moderate") {
+      v = 0.05
+    } else if(input$removal_scenario == "high") {
+      v = 0.1
+    } else {
+      error("invalid choice")
+    }
+    updateSliderInput(session, "removal_rate", value=v)
+  })
+
   observe({ # observe the smoother selection 
     input$reset # leave this alone.  Makes the smoothers reset
     updateSliderInput(session, "smooth_dx",  step=smoothers[[which(smoothernames==input$smoother)]]$step,
@@ -56,12 +69,12 @@ shinyServer(function(input, output, session) {
     if(input$intvxday[1]<=begindate)  {
       plot_indiana_bounds(input$N, input$intvxday[1], input$intvxday[2], input$showDates, input$smooth_dx, 
                           input$smooth_Iudx, input$smooth_I, input$smooth_S, input$showSusc, input$smoother, 
-                          input$removal_proportion)
+                          input$removal_rate, input$plotType)
     }
   })
 
   output$results <- renderText({
-    get_indiana_results_text(input$N, input$intvxday[1], input$intvxday[2], input$smooth_dx, input$smooth_Iudx, input$smooth_I, input$smooth_S, input$smoother, input$removal_proportion)
+    get_indiana_results_text(input$N, input$intvxday[1], input$intvxday[2], input$smooth_dx, input$smooth_Iudx, input$smooth_I, input$smooth_S, input$smoother, input$removal_rate)
   })
 
   output$downloadDiagnoses <- downloadHandler(

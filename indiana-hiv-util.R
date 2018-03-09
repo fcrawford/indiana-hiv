@@ -134,7 +134,7 @@ plot_methods_illustration = function() {
   smooth_I    = smoothers[[1]]$Irange[2]
   smooth_S    = smoothers[[1]]$Srange[2]
   smoother = smoothernames[1]
-  removal_rate = 1
+  removal_rate = 0.05
 
   intvxday = first_dx #mdy("01/01/2013")
 
@@ -553,11 +553,11 @@ plot_infections_by_N = function() {
   smooth_I    = smoothers[[1]]$Irange[2]
   smooth_S    = smoothers[[1]]$Srange[2]
   smoother = smoothernames[1]
-  removal_proportion = 1
+  removal_rate = 0.05
   
   my_daily_timescale = rev(c(2, mdy("01/01/2013")-zerodate, begindate-zerodate) )
   a = 0.3
-  mycols = rev(c(rgb(1,0,0,alpha=0.9), rgb(0,1,0,alpha=a), rgb(0,0,1,alpha=a)))
+  mycols = rev(c(rgb(1,0,0,alpha=a), rgb(0,1,0,alpha=a), rgb(0,0,1,alpha=a)))
 
   Ns = seq(215,4000,length.out=50)
 
@@ -567,7 +567,7 @@ plot_infections_by_N = function() {
 
   par(mar=c(4.0,4.5,1,1.0), bty="n", cex.lab=1.2, cex.axis=1.2)
 
-  ymax = 300
+  ymax = 350
 
   plot(0, type="n", ylim=c(0,ymax), xlim=c(0,max(Ns)), ylab="Projected HIV infections by October 2015", xlab="Population size N", lwd=2)
 
@@ -577,12 +577,12 @@ plot_infections_by_N = function() {
 
       idate = zerodate + my_daily_timescale[j]
 
-      obj = get_indiana_bounds(Ns[i], idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_proportion)  
+      obj = get_indiana_bounds(Ns[i], idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
 
-      I_lo_end[i,j] = obj$Idx_lo2[ndays]
-      I_hi_end[i,j] = obj$Idx_hi2[ndays]
+      I_lo_end[i,j] = obj$I_lo2[ndays]
+      I_hi_end[i,j] = obj$I_hi2[ndays]
     }
-    polygon(c(Ns,rev(Ns)), c(I_hi_end[,j], rev(I_lo_end[,j])), col=mycols[j], border="black")
+    polygon(c(Ns,rev(Ns)), c(I_hi_end[,j], rev(I_lo_end[,j])), col=mycols[j], border=mycols[j])
   }
 
   points(4000, max(dx), pch=16, cex=1.5)
@@ -605,7 +605,7 @@ plot_infections_by_intvx_date = function() {
   smooth_I    = smoothers[[1]]$Irange[2]
   smooth_S    = smoothers[[1]]$Srange[2]
   smoother = smoothernames[1]
-  removal_proportion = 1
+  removal_rate = 0.05
   
   my_daily_timescale = seq(daily_timescale[1]+1, days_to_first_dx, by=10)
   #my_daily_timescale = sort(unique(c(my_daily_timescale, days_to_first_dx, days_to_investigation_begin, 
@@ -620,9 +620,9 @@ plot_infections_by_intvx_date = function() {
     idate = zerodate + my_daily_timescale[i]
     #print(idate)
 
-    obj = get_indiana_bounds(N, idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_proportion)  
-    I_lo_end[i] = obj$Idx_lo2[ndays]
-    I_hi_end[i] = obj$Idx_hi2[ndays]
+    obj = get_indiana_bounds(N, idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
+    I_lo_end[i] = obj$I_lo2[ndays]
+    I_hi_end[i] = obj$I_hi2[ndays]
   }
 
   #par(mar=c(4.0,4.5,1,1.0), bty="n", cex.lab=1.2, cex.axis=1.2)
@@ -650,15 +650,70 @@ plot_infections_by_intvx_date = function() {
 
 }
 
+
+###############################################
+###############################################
+
+plot_infections_by_rho = function() {
+
+  
+  smooth_dx   = smoothers[[1]]$dxrange[2]
+  smooth_Iudx = smoothers[[1]]$Iudxrange[2]
+  smooth_I    = smoothers[[1]]$Irange[2]
+  smooth_S    = smoothers[[1]]$Srange[2]
+  smoother = smoothernames[1]
+  N = 536
+  
+  my_daily_timescale = rev(c(2, mdy("01/01/2013")-zerodate, begindate-zerodate) )
+  a = 0.3
+  mycols = rev(c(rgb(1,0,0,alpha=a), rgb(0,1,0,alpha=a), rgb(0,0,1,alpha=a)))
+
+  rhos = seq(0,0.1,length.out=50)
+
+  I_hi_end = array(NA,dim=c(length(rhos),length(my_daily_timescale)))
+  I_lo_end = array(NA,dim=c(length(rhos),length(my_daily_timescale)))
+
+
+  par(mar=c(4.0,4.5,1,1.0), bty="n", cex.lab=1.2, cex.axis=1.2)
+
+  ymax = N
+
+  plot(0, type="n", ylim=c(0,ymax), xlim=c(0,max(rhos)), ylab="Projected HIV infections by October 2015", 
+       xlab="Removal rate", lwd=2)
+
+  for(j in 1:length(my_daily_timescale)) {
+    for(i in 1:length(rhos)) {
+
+      idate = zerodate + my_daily_timescale[j]
+
+      obj = get_indiana_bounds(N, idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, rhos[i])  
+
+      I_lo_end[i,j] = obj$I_lo2[ndays]
+      I_hi_end[i,j] = obj$I_hi2[ndays]
+    }
+    polygon(c(rhos,rev(rhos)), c(I_hi_end[,j], rev(I_lo_end[,j])), col=mycols[j], border=mycols[j])
+  }
+
+  points(0.1, max(dx), pch=16, cex=1.5)
+  text(0.1, max(dx),   paste("Actual infections:", max(dx)), pos=2)
+
+  legend(0.06,ymax, paste("Intervention on", c(zerodate+2, mdy("01/01/2013"), begindate)), 
+         pch=22, pt.cex=2, cex=1, pt.bg=mycols, bty="n")
+
+
+
+}
+
+
 ###############################################
 ###############################################
 
 
 
 
-get_indiana_results_text = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_proportion) {
+get_indiana_results_text = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate) {
 
-  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_proportion)  
+  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
 
   res = paste('When diagnostic scaleup starts on <span style=\"font-weight:bold\">', intvxday, 
               '</span>, cumulative incidence on <span style=\"font-weight:bold\">', enddate, 
@@ -677,9 +732,9 @@ get_indiana_results_text = function(N, intvxday, dday, smooth_dx, smooth_Iudx, s
 
 
 plot_indiana_bounds = function(N, intvxday, dday, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother,
-                               removal_proportion, plotType) {
+                               removal_rate, plotType) {
 
-  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_proportion)  
+  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
 
   par(bty="n", cex=text_cex, cex.lab=text_cex, cex.axis=text_cex, 
       mar=c(2.7,4.5,1,0.0))
@@ -913,39 +968,45 @@ generate_publication_figures = function() {
   smooth_I    = smoothers[[1]]$Irange[2]
   smooth_S    = smoothers[[1]]$Srange[2]
   smoother = smoothernames[1]
-  removal_proportion = 1
+  removal_rate = 0.05
   showDates = FALSE
   showSusc = TRUE
 
+  w = 16
 
-  pdf("fig1.pdf", width=14, height=8, bg="white")
+
+  pdf("fig1.pdf", width=w, height=9, bg="white")
   plot_methods_illustration()
   dev.off()
 
 
-  pdf("fig2.pdf", width=14,height=8, bg="white")
-  plot_indiana_bounds(N, begindate, enddate, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother, removal_proportion) 
+  pdf("fig2.pdf", width=w,height=9, bg="white")
+  plot_indiana_bounds(N, begindate, enddate, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother, removal_rate, "model") 
   dev.off()
 
 
-  pdf("fig3.pdf", width=14,height=8, bg="white")
+  pdf("fig3.pdf", width=w,height=9, bg="white")
   d1 = mdy("01/01/2013")
   d2 = d1+140
-  plot_indiana_bounds(N, d1, d2, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother, removal_proportion) 
+  plot_indiana_bounds(N, d1, d2, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother, removal_rate, "model") 
   dev.off()
 
-  pdf("fig4.pdf", width=14,height=8, bg="white")
+  pdf("fig4.pdf", width=w,height=9, bg="white")
   d1 = zerodate+2
   d2 = d1+140
-  plot_indiana_bounds(N, d1, d2, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother, removal_proportion) 
+  plot_indiana_bounds(N, d1, d2, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother, removal_rate, "model") 
   dev.off()
 
-  pdf("fig5.pdf", width=14,height=6, bg="white")
+  pdf("fig5.pdf", width=w,height=7, bg="white")
   plot_infections_by_intvx_date()
   dev.off()
 
-  pdf("figs1.pdf", width=14,height=6, bg="white")
+  pdf("figs1.pdf", width=w,height=7, bg="white")
   plot_infections_by_N()
+  dev.off()
+
+  pdf("figs2.pdf", width=w,height=7, bg="white")
+  plot_infections_by_rho()
   dev.off()
 
   # convert to png

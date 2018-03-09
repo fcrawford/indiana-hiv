@@ -31,7 +31,7 @@ shinyServer(function(input, output, session) {
 
   observe({ 
     if(input$removal_scenario == "low") {
-      v = 0.01
+      v = 0.0038
     } else if(input$removal_scenario == "moderate") {
       v = 0.05
     } else if(input$removal_scenario == "high") {

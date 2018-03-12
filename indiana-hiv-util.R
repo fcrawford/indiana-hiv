@@ -539,6 +539,8 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
               dxrate_hi_smooth2=dxrate_hi_smooth2,
               beta_lo=beta_lo,
               beta_hi=beta_hi,
+              incidencerate_lo=incidencerate_lo,
+              incidencerate_hi=incidencerate_hi,
               N=N))
 }
 
@@ -715,12 +717,18 @@ get_indiana_results_text = function(N, intvxday, dday, smooth_dx, smooth_Iudx, s
 
   obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
 
-  res = paste('When diagnostic scaleup starts on <span style=\"font-weight:bold\">', intvxday, 
+  res = paste('<p>When diagnostic scaleup starts on <span style=\"font-weight:bold\">', intvxday, 
               '</span>, cumulative incidence on <span style=\"font-weight:bold\">', enddate, 
               '</span> is projected to be between <span style=\"font-weight:bold\">', round(obj$I_lo2[ndays]), 
               '</span> and <span style=\"font-weight:bold\">', round(obj$I_hi2[ndays]), 
               '</span> people, compared to the actual number <span style=\"font-weight:bold\">', cumcases[ndays], 
-              '</span>.', sep='')
+              '</span>.</p>', 
+              '<p>The transmission rate is estimated to be between <span style=\"font-weight:bold\">', 
+              signif(obj$incidencerate_lo, digits=3),
+              '</span> and <span style=\"font-weight:bold\">', 
+              signif(obj$incidencerate_hi,digits=3), 
+              '</span>.</p>',
+              sep='')
 
   return(res)
 }

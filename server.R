@@ -33,9 +33,9 @@ shinyServer(function(input, output, session) {
     if(input$removal_scenario == "low") {
       v = 0.0038
     } else if(input$removal_scenario == "moderate") {
-      v = 0.05
+      v = 0.024
     } else if(input$removal_scenario == "high") {
-      v = 0.1
+      v = 0.5
     } else {
       error("invalid choice")
     }

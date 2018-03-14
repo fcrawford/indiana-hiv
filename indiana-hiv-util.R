@@ -6,7 +6,7 @@ source("indiana-hiv-load.R")
 #############
 
 
-smoothers = list(list(name="spline",
+smoothers = list(list(name="spline (default)",
                       f=function(x,y,v)smooth.spline(y ~ x, df=v)$y,
                       step=1,
                       dxrange=c(5,16,50),
@@ -59,6 +59,7 @@ mydarkgray  = make_transparent(Greys[6],  0.3)
 mydarkorange = make_transparent(Oranges[6], 0.2)
 mydarkpurple = make_transparent(Purples[7], 0.3)
 
+mydarkgray2  = make_transparent(Greys[7],  1)
 
 
 days_to_first_dx = as.numeric(first_dx - zerodate)
@@ -249,7 +250,7 @@ plot_methods_illustration = function() {
   arrows(days_to_first_dx+140, ymax,
          days_to_first_dx+140, dxrate_hi_smooth[daily_timescale==(days_to_first_dx+140)], length=0.05)
   text(days_to_first_dx+140, ymax,
-       "Target diagnostic scaleup", pos=2, cex=text_cex, offset=0.3)
+       "Target casefinding scaleup", pos=2, cex=text_cex, offset=0.3)
 
 
   legend(0, max(dxrate_hi_smooth),
@@ -288,7 +289,7 @@ plot_methods_illustration = function() {
   arrows(days_to_dday, ymax,
          days_to_dday, obj2$dxrate_hi_smooth2[daily_timescale==days_to_dday], length=0.05)
   text(days_to_dday, ymax,
-       "Target diagnostic scaleup", pos=2, cex=text_cex, offset=0.3)
+       "Target casefinding scaleup", pos=2, cex=text_cex, offset=0.3)
   mtext("D", side=3, adj=0, line=-1.2, cex=2)
 
   # detail plot
@@ -516,6 +517,9 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
     S_hi2[i] = pmax(0,N - I_lo2[i])
   }
 
+  #cat("incidencerate_lo =", incidencerate_lo, "\n")
+  #cat("incidencerate_hi =", incidencerate_hi, "\n")
+
   return(list(I_lo=I_lo,
               I_hi=I_hi,
               I_lo2=I_lo2,
@@ -717,7 +721,7 @@ get_indiana_results_text = function(N, intvxday, dday, smooth_dx, smooth_Iudx, s
 
   obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
 
-  res = paste('<p>When diagnostic scaleup starts on <span style=\"font-weight:bold\">', intvxday, 
+  res = paste('<p>When casefinding scaleup starts on <span style=\"font-weight:bold\">', intvxday, 
               '</span>, cumulative incidence on <span style=\"font-weight:bold\">', enddate, 
               '</span> is projected to be between <span style=\"font-weight:bold\">', round(obj$I_lo2[ndays]), 
               '</span> and <span style=\"font-weight:bold\">', round(obj$I_hi2[ndays]), 
@@ -921,6 +925,11 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
     polygon(c(daily_timescale,rev(daily_timescale)), c(Iudx_lo2,rev(Iudx_hi2)), col=myred, border=myred)
     polygon(c(daily_timescale,rev(daily_timescale)), c(cumdx_lo,rev(cumdx_hi)), col=mypurple, border=mypurple)
 
+    points(ndays, obj$I_lo2[ndays], pch=3, col=mydarkgray2)
+    points(ndays, obj$I_hi2[ndays], pch=3, col=mydarkgray2)
+    text(ndays, obj$I_lo2[ndays], round(obj$I_lo2[ndays]), pos=4, col=mydarkgray2, cex=text_cex)
+    text(ndays, obj$I_hi2[ndays], round(obj$I_hi2[ndays]), pos=4, col=mydarkgray2, cex=text_cex)
+
   }
 
   abline(h=N, lty="dashed")
@@ -952,6 +961,11 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
     text(days_to_sep_started, ymax*0.9,
          "SEP Begins", pos=2, cex=text_cex, offset=0.3)
   }
+
+
+  points(ndays, cumcases[ndays], pch=16)
+  text(ndays, cumcases[ndays], cumcases[ndays], pos=4, cex=text_cex)
+
 
 
   res = list(Iend_lo=I_lo[ndays], Iend_hi=I_hi[ndays])

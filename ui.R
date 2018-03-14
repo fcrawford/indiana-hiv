@@ -13,8 +13,8 @@ ui = fluidPage(
     sidebarPanel(
       tabsetPanel(type="tabs", 
         tabPanel("Main",
-          #includeMarkdown("content/instructions.md"),
-          hr(),
+          includeMarkdown("content/instructions.md"),
+          #hr(),
           radioButtons("scenario", "Intervention date scenarios",
                        c("Early"="early",
                          "Intermediate"="mid",
@@ -22,21 +22,14 @@ ui = fluidPage(
                        inline=TRUE,
                        selected="actual"),
           sliderInput(inputId="intvxday", 
-            label="Intervention scale-up dates", 
+            label=NULL, #"Intervention scale-up dates", 
             min = zerodate+2,
             max = enddate-1,
             value = c(begindate,enddate),
             dragRange=TRUE),
-          hr(),
-          radioButtons("removal_scenario", "Removal scenarios",
-                       c("Low"="low",
-                         "Moderate"="moderate",
-                         "High"="high"),
-                       inline=TRUE,
-                       selected="moderate"),
-          sliderInput(inputId="removal_rate", 
-                      "Removal rate (per diagnosed person per day)", min=0, max=0.1, value=0.05),
-          hr(),
+          #hr(),
+
+          #hr(),
           #h4("Display"),
           radioButtons("plotType", "Plot type", 
                        c("Raw Data"="raw",
@@ -44,15 +37,25 @@ ui = fluidPage(
                        inline=TRUE,
                        selected="raw"),
           checkboxInput("showDates", "Show actual response dates", value=FALSE),
-          checkboxInput("showSusc", "Show susceptible population", value=FALSE),
-          hr(),
-          h4("Results"),
-          htmlOutput("results")
+          checkboxInput("showSusc", "Show susceptible population", value=FALSE) #,
+          #hr(),
+          #h4("Results"),
+          #htmlOutput("results")
         ),
         tabPanel("Settings",
           hr(),
           #checkboxInput("constFOI", "Constant FOI", value=FALSE),
           sliderInput(inputId="N", "Risk population size", min = 215, max = 4000, value = 536),
+          radioButtons("removal_scenario", 
+                       "Removal scenarios",
+                       c("Low"="low",
+                         "Moderate"="moderate",
+                         "High"="high"),
+                       inline=TRUE,
+                       selected="moderate"),
+          sliderInput(inputId="removal_rate", 
+                      label=NULL, #"Removal rate (per diagnosed person per day)", 
+                      min=0, max=0.1, value=0.05),
           actionButton("reset", "Reset smoothers"),
           selectInput("smoother", "Smoother", choices=smoothernames),
           sliderInput("smooth_dx", "Diagnosis smoother", step=smoothers[[1]]$step,
@@ -72,10 +75,10 @@ ui = fluidPage(
             downloadLink("downloadDiagnoses", "Diagnoses by week"), 
             downloadLink("downloadIncidence", "Estimated cumulative incidence from the CDC") 
           )
-        ),
-        tabPanel("Help",
-          includeMarkdown("content/instructions.md")
-        )
+        ) #,
+        #tabPanel("Help",
+          #includeMarkdown("content/instructions.md")
+        #)
       )
     ),
   # main panel

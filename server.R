@@ -35,7 +35,7 @@ shinyServer(function(input, output, session) {
     } else if(input$removal_scenario == "moderate") {
       v = 0.024
     } else if(input$removal_scenario == "high") {
-      v = 0.5
+      v = 0.05
     } else {
       error("invalid choice")
     }
@@ -73,9 +73,9 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  output$results <- renderText({
-    get_indiana_results_text(input$N, input$intvxday[1], input$intvxday[2], input$smooth_dx, input$smooth_Iudx, input$smooth_I, input$smooth_S, input$smoother, input$removal_rate)
-  })
+  #output$results <- renderText({
+    #get_indiana_results_text(input$N, input$intvxday[1], input$intvxday[2], input$smooth_dx, input$smooth_Iudx, input$smooth_I, input$smooth_S, input$smoother, input$removal_rate)
+  #})
 
   output$downloadDiagnoses <- downloadHandler(
     filename = function() {

@@ -428,7 +428,7 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
 
   incidencerate_lo = (I_lo_smooth[ndays] - I_lo_smooth[1])/(sum(Iudx_hi_smooth * S_hi_smooth))
   incidencerate_hi = (I_hi_smooth[ndays] - I_hi_smooth[1])/(sum(Iudx_lo_smooth * S_lo_smooth))
-  #incidencerate_mid = mean(c(incidencerate_lo, incidencerate_hi))
+
 
   #cat("avg incidencerate = (", incidencerate_lo, ", ", incidencerate_hi, ")\n", sep="")
   #e1 = S_hi_smooth %*% Iudx_hi_smooth #I_hi_smooth 
@@ -488,7 +488,7 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
 
   for(i in intvxday:ndays) {
 
-    newdx_hi[i] = dxrate_lo_smooth2[i-1]*Iudx_hi2[i-1] 
+    newdx_hi[i] = dxrate_hi_smooth2[i-1]*Iudx_hi2[i-1] 
     newdx_lo[i] = dxrate_lo_smooth2[i-1]*Iudx_lo2[i-1] 
 
     new_removal_lo[i] = removal_rate*Idx_lo2[i-1]

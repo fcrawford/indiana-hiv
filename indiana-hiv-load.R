@@ -44,29 +44,7 @@ enddate          = casedates[length(casedates)]
 casedays         = as.numeric(casedates - zerodate)
 
 
-#######################
-# load calibration bounds for true cumulative incidence of infection
-# these are by month!
-
-#calibration_bounds = read.csv("data/simplistic_simResults.csv")
-#calibration_days = as.numeric(difftime(calibration_bounds$date, zerodate, units="days"))
-#calibration_scale = 1.0
-#calibration_lo = pmax(0, calibration_bounds$Size - calibration_scale*(calibration_bounds$Size-calibration_bounds$lowerBound) )
-#calibration_hi = calibration_bounds$Size + calibration_scale*(calibration_bounds$upperBound - calibration_bounds$Size)
-#
-
-
-
-
-#####################
-# put everything on the dayseq time scale
-
-#calibration_lo = approx(calibration_days, calibration_lo, xout=dayseq, method="constant")$y
-#calibration_hi = approx(calibration_days, calibration_hi, xout=dayseq, method="constant")$y
-
-
-
-dat = read.csv("extracted_infection_curves.csv", header=FALSE)
+dat = read.csv("data/extracted_infection_curves.csv", header=FALSE)
 names(dat) = c("date", "infections")
 
 dat$days = difftime(mdy("01/01/2011") + (dat$date - 2011)*365, zerodate, units="days")
@@ -94,19 +72,15 @@ for(i in 2:n) {
 #infections_lo2 = pmax(0,infections_mean - (infections_mean-infections_lo)*scalefac)
 #infections_hi2 = pmin(max(dat$infections), infections_mean + (infections_hi-infections_mean)*scalefac)
 
-weekseq = seq(min(dayseq), max(dayseq), by=30)
+#weekseq = seq(min(dayseq), max(dayseq), by=7)
 
-calibration_lo_tmp = approx(dat$days, infections_lo, xout=weekseq, method="constant")$y
-calibration_hi_tmp = approx(dat$days, infections_hi, xout=weekseq, method="constant")$y
+calibration_lo = approx(dat$days, infections_lo, xout=dayseq, method="constant")$y
+calibration_hi = approx(dat$days, infections_hi, xout=dayseq, method="constant")$y
 
-calibration_lo = approx(weekseq, calibration_lo_tmp, xout=dayseq, method="constant")$y
-calibration_hi = approx(weekseq, calibration_hi_tmp, xout=dayseq, method="constant")$y
+#calibration_lo = approx(weekseq, calibration_lo_tmp, xout=dayseq, method="constant")$y
+#calibration_hi = approx(weekseq, calibration_hi_tmp, xout=dayseq, method="constant")$y
 
-scalefac = 1.2
 
-calibration_mean = (calibration_lo + calibration_hi) / 2
-calibration_lo = pmax(0,calibration_mean - scalefac*(calibration_mean-calibration_lo))
-calibration_hi = calibration_mean + scalefac*(calibration_hi-calibration_mean)
 
 cumcases = approx(casedays, cumsum(casesbyweek$Cases), xout=dayseq, method="constant")$y
 
@@ -116,7 +90,7 @@ cumcases = approx(casedays, cumsum(casesbyweek$Cases), xout=dayseq, method="cons
 
 cumcases[1:(sim_start_idx-1)] = 0 # fill in zero cum cases before first case detected. 
 
-Iudx_lo = pmax(0, calibration_lo - cumcases)
+Iudx_lo = pmax(1, calibration_lo - cumcases)
 Iudx_hi =         calibration_hi - cumcases
 
 dayseq_Iudx = dayseq[!is.na(Iudx_lo)]

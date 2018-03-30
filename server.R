@@ -69,7 +69,7 @@ shinyServer(function(input, output, session) {
     if(input$intvxday[1]<=begindate)  {
       plot_indiana_bounds(input$N, input$intvxday[1], input$intvxday[2], input$showDates, input$smooth_dx, 
                           input$smooth_Iudx, input$smooth_I, input$smooth_S, input$showSusc, input$smoother, 
-                          input$removal_rate, input$plotType)
+                          input$removal_rate, input$plotType, input$calibration_scale)
     }
   })
 
@@ -91,7 +91,7 @@ shinyServer(function(input, output, session) {
       "incidence.csv"
     },
     content = function(file) {
-      file.copy("data/simplistic_simResults.csv", file)
+      file.copy("data/extracted_infection_curves.csv", file)
     }
   )
 

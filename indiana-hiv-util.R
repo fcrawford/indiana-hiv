@@ -10,9 +10,9 @@ smoothers = list(list(name="spline (default)",
                       f=function(x,y,v)smooth.spline(y ~ x, df=v)$y,
                       step=1,
                       dxrange=c(5,16,50),
-                      Iudxrange=c(2,9,50),
-                      Irange=c(2,2,50),
-                      Srange=c(2,2,50)),
+                      Iudxrange=c(2,25,100),
+                      Irange=c(2,50,100),
+                      Srange=c(2,50,100)),
                  list(name="loess",
                       f=function(x,y,v)predict(loess(y ~ x,span=v)),
                       step=0.01,
@@ -48,7 +48,7 @@ myred   = make_transparent(Reds[6],   0.5)
 mygreen = make_transparent(Greens[7], 0.5)
 myblue  = make_transparent(Blues[6],  0.5)
 mygray  = make_transparent(Greys[6],  0.5)
-myorange = make_transparent(Oranges[6], 0.5)
+myorange = make_transparent(Oranges[7], 0.5)
 mypurple = make_transparent(Purples[7], 0.5)
 
 
@@ -90,10 +90,12 @@ plot_dx_rate = function(obj) {
   dxrate_hi_smooth2 = obj$dxrate_hi_smooth2
   dxrate_lo_smooth2 = obj$dxrate_lo_smooth2
 
+  dxrate_mid_smooth2 = obj$dxrate_mid_smooth2
+
   dxrate_hi_smooth = obj$dxrate_hi_smooth
   dxrate_lo_smooth = obj$dxrate_lo_smooth
   
-  ymax = max(dxrate_hi_smooth2)
+  ymax = max(dxrate_hi_smooth)
 
   plot(daily_timescale, dxrate_hi_smooth2, 
        type="n", 
@@ -107,14 +109,16 @@ plot_dx_rate = function(obj) {
   polygon(c(daily_timescale,rev(daily_timescale)), c(dxrate_lo_smooth, rev(dxrate_hi_smooth)), col=mydarkorange, border=mydarkorange)
 
   # projected
-  polygon(c(daily_timescale,rev(daily_timescale)), c(dxrate_lo_smooth2, rev(dxrate_hi_smooth2)), col=myorange, border=myorange)
+  #polygon(c(daily_timescale,rev(daily_timescale)), c(dxrate_lo_smooth2, rev(dxrate_hi_smooth2)), col=myorange, border=myorange)
+  lines(daily_timescale, dxrate_mid_smooth2, col=myorange, lwd=2)
 
 
   legend(0, 0.9*ymax,
            c("Diagnosis rate (actual)", "Diagnosis rate (projected)"),
-           lty=0,
-           pch=22,
-           pt.cex=3,
+           lty=c(0,1),
+           lwd=c(NA,2),
+           pch=c(22,NA),
+           pt.cex=c(3,NA),
            col=c(mydarkorange, myorange),
            border=c(mydarkorange, myorange),
            pt.bg=c(mydarkorange, myorange),
@@ -139,14 +143,14 @@ plot_methods_illustration = function() {
 
   intvxday = first_dx #mdy("01/01/2013")
 
-  obj_0 = get_indiana_bounds(N, begindate, enddate, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate) 
+  obj_0 = get_indiana_bounds(N, begindate, enddate, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale) 
 
   Iudx_lo2_actual = obj_0$Iudx_lo2
   Iudx_hi2_actual = obj_0$Iudx_hi2
 
 
   dday = intvxday + 140
-  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate) 
+  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale) 
   I_lo = obj$I_lo
   I_hi = obj$I_hi
 
@@ -268,7 +272,7 @@ plot_methods_illustration = function() {
 
   intvxday = mdy("01/01/2013")
   dday = intvxday + 140
-  obj2 = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)
+  obj2 = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale)
 
   days_to_intvx = as.numeric(intvxday - zerodate)
   days_to_dday = days_to_intvx+140
@@ -359,9 +363,9 @@ plot_methods_illustration = function() {
 ############################################
 ############################################
 
-plot_transmission_rate = function(obj) { #N, intvxday, dday, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother) {
 
-  #obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother)
+plot_transmission_rate = function(obj) { 
+
 
   beta_lo = obj$beta_lo
   beta_hi = obj$beta_hi
@@ -375,24 +379,36 @@ plot_transmission_rate = function(obj) { #N, intvxday, dday, showDates, smooth_d
 
 
 
+
 ############################################
 ############################################
 ############################################
 ############################################
 
-get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate) {
+get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale) {
 
   intvxday = as.numeric(intvxday - zerodate)
   dday = as.numeric(dday - zerodate)
 
-
-
-  # distinguish between date (input) and day (indexing)
-  # distinguish between actual dates/days and counterfactual dates/days
-  # distinguish between raw data, smoothed raw data, and counterfactual projections
-  # REMOVE time-varying beta estimation. 
-
   smooth_method = smoothers[[which(smoothernames==smoother)]]$f
+
+  calibration_mean = (calibration_lo + calibration_hi) / 2
+  calibration_lo_tmp = pmax(0,calibration_mean - calibration_scale*(calibration_mean-calibration_lo))
+  calibration_hi_tmp = calibration_mean + calibration_scale*(calibration_hi-calibration_mean)
+
+  ylo = rep(NA, ndays)
+  yhi = rep(NA, ndays)
+  ylo[1] = calibration_lo_tmp[1]
+  yhi[1] = calibration_hi_tmp[1]
+
+  for(i in 2:ndays) {
+    yhi[i] = max(c(yhi[1:(i-1)], calibration_hi_tmp[i]))
+    ylo[i] = min(calibration_lo_tmp[i:ndays])
+  }
+
+  calibration_lo = ylo
+  calibration_hi = yhi
+
 
   I_hi = calibration_hi
   I_lo = pmax(calibration_lo,dx)
@@ -422,12 +438,63 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
   dxrate_hi_smooth = dx_smooth_diff/Iudx_lo_smooth
   dxrate_lo_smooth = dx_smooth_diff/Iudx_hi_smooth
 
+  #Idx_hi_est = rep(0, ndays)
+  #Idx_lo_est = rep(0, ndays)
+  #R_est = rep(0, ndays)
+  #for(i in 2:ndays) {
+    #Idx_hi_est[i] = Idx_est[i-1] + dx_smooth_diff[i-1] 
+    #Idx_lo_est[i] = Idx_est[i-1] + dx_smooth_diff[i-1] 
+    #R_est[i] = R_est[i-1] + removal_rate*Idx_est[i-1]
+  #}
+  #S_lo_est = N-Iudx_hi_smooth-Idx_est-R_est
+  #S_hi_est = N-Iudx_lo_smooth-Idx_est-R_est
+
+  #print(cbind(S_lo_est, S_hi_est))
+
   #dxrate_lo = mean(dxrate_lo_smooth[days_to_first_dx:ndays])
   #dxrate_hi = mean(dxrate_hi_smooth[days_to_first_dx:ndays])
   #dxrate_mid = mean(c(dxrate_lo, dxrate_hi))
 
-  incidencerate_lo = (I_lo_smooth[ndays] - I_lo_smooth[1])/(sum(Iudx_hi_smooth * S_hi_smooth))
-  incidencerate_hi = (I_hi_smooth[ndays] - I_hi_smooth[1])/(sum(Iudx_lo_smooth * S_lo_smooth))
+  # in the below, person-time of contact is greatest when all infected individuals are infectious
+  # but person-time of contact is smallest when only undx infected are infectious
+  daymax = first_dx_day
+  beta_lo = (I_lo_smooth[daymax] - I_hi[1])/(I_hi_smooth[1:daymax] %*% (N-I_hi_smooth[1:daymax]))
+  beta_hi = (I_hi_smooth[daymax] - I_lo[1])/(Iudx_lo_smooth[1:daymax] %*% (N-Iudx_lo_smooth[1:daymax]))
+
+  cat("beta in ", beta_lo, ",", beta_hi, "\n")
+
+  beta_lo = rep(beta_lo, ndays)
+  beta_hi = rep(beta_hi, ndays)
+  beta_mid = rep((beta_lo+beta_hi)/2, ndays)
+
+  #print(cbind(Idx_est, Iudx_lo_smooth, S_lo_est, Idx_est+Iudx_lo_smooth+S_lo_est)) 
+
+  #dy = days_to_first_dx
+  #beta_lo_pre = (I_lo_smooth[dy] - I_hi[1])/(I_hi_smooth[1:dy] %*% (N-I_hi_smooth[1:dy]))
+  #beta_hi_pre = (I_hi_smooth[dy] - I_lo[1])/(Iudx_lo_smooth[1:dy] %*% (N-Iudx_lo_smooth[1:dy]))
+
+
+  #beta_lo_post = (I_lo_smooth[ndays] - I_hi[dy+1])/(I_hi_smooth[(dy+1):ndays] %*% (N-I_lo_smooth[(dy+1):ndays]))
+  #beta_hi_post = (I_hi_smooth[ndays] - I_lo[dy+1])/(Iudx_lo_smooth[(dy+1):ndays] %*% (N-Iudx_hi_smooth[(dy+1):ndays]))
+
+  #beta_lo_post = diff(I_lo_smooth[dy:ndays]) / 
+                 #((Iudx_hi_smooth[(dy+1):ndays]+Idx_est[(dy+1):ndays]) * S_hi_est[(dy+1):ndays])
+  #beta_hi_post = diff(I_hi_smooth[dy:ndays]) / 
+                 #((Iudx_lo_smooth[(dy+1):ndays]+Idx_est[(dy+1):ndays]) * S_lo_est[(dy+1):ndays])
+
+
+  #beta_lo = c(rep(beta_lo_pre, dy), rep(beta_lo_post, ndays-dy))
+  #beta_hi = c(rep(beta_hi_pre, dy), rep(beta_hi_post, ndays-dy))
+
+  #beta_lo = c(rep(beta_lo_pre, dy), beta_lo_post)
+  #beta_hi = c(rep(beta_hi_pre, dy), beta_hi_post)
+
+
+  # time-varying beta 
+  #beta_lo = c(0,diff(I_lo_smooth))/(I_hi_smooth * (N-I_hi_smooth))
+  #beta_hi = c(0,diff(I_hi_smooth))/(Iudx_lo_smooth * (N-Iudx_lo_smooth))
+
+
 
 
   #cat("avg incidencerate = (", incidencerate_lo, ", ", incidencerate_hi, ")\n", sep="")
@@ -444,8 +511,8 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
 
 
 
-  beta_lo = rep(incidencerate_lo, ndays)
-  beta_hi = rep(incidencerate_hi, ndays)
+  #beta_lo = rep(incidencerate_lo, ndays)
+  #beta_hi = rep(incidencerate_hi, ndays)
 
 
 
@@ -459,6 +526,8 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
   dxrate_hi_smooth2 = rep(0,length(daily_timescale))
   dxrate_hi_smooth2[intvxday:(intvxday+peak_dx_day-days_to_first_dx)] = dxrate_hi_smooth[days_to_first_dx:peak_dx_day]
   dxrate_hi_smooth2[(intvxday+peak_dx_day-days_to_first_dx+1):ndays] = dxrate_hi_smooth[peak_dx_day]
+
+  dxrate_mid_smooth2 = (dxrate_lo_smooth2 + dxrate_hi_smooth2)/2
 
 
   S_lo2 = S_lo
@@ -475,10 +544,15 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
 
   newdx_hi = rep(0, length(daily_timescale))
   newdx_lo = rep(0, length(daily_timescale))
+  newdx_mid = rep(0, length(daily_timescale))
+
   newinfect_hi = rep(0, length(daily_timescale))
   newinfect_lo = rep(0, length(daily_timescale))
+  newinfect_mid = rep(0, length(daily_timescale))
+
   new_removal_hi = rep(0,length(daily_timescale))
   new_removal_lo = rep(0,length(daily_timescale))
+  new_removal_mid = rep(0,length(daily_timescale))
 
   R_lo = rep(0, length(daily_timescale))
   R_hi = rep(0, length(daily_timescale))
@@ -488,14 +562,17 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
 
   for(i in intvxday:ndays) {
 
-    newdx_hi[i] = dxrate_hi_smooth2[i-1]*Iudx_hi2[i-1] 
-    newdx_lo[i] = dxrate_lo_smooth2[i-1]*Iudx_lo2[i-1] 
+    newdx_hi[i] = dxrate_mid_smooth2[i-1]*Iudx_hi2[i-1] 
+    newdx_lo[i] = dxrate_mid_smooth2[i-1]*Iudx_lo2[i-1] 
+    #newdx_mid[i] = (newdx_hi[i] + newdx_lo[i])/2
 
     new_removal_lo[i] = removal_rate*Idx_lo2[i-1]
     new_removal_hi[i] = removal_rate*Idx_hi2[i-1]
+    #new_removal_mid[i] = (new_removal_lo[i]+new_removal_hi[i])/2
 
-    newinfect_hi[i] = beta_hi[i-1]*(Iudx_hi2[i-1] + Idx_hi2[i-1])*S_hi2[i-1]
-    newinfect_lo[i] = beta_lo[i-1]*(Iudx_lo2[i-1] + Idx_lo2[i-1])*S_lo2[i-1]
+    newinfect_hi[i] = beta_mid[i-1]*(Iudx_hi2[i-1] + Idx_hi2[i-1])*S_hi2[i-1]
+    newinfect_lo[i] = beta_mid[i-1]*(Iudx_lo2[i-1] + Idx_lo2[i-1])*S_lo2[i-1]
+    #newinfect_mid[i] = (newinfect_lo[i] + newinfect_hi[i])/2
 
     Iudx_lo2[i] = pmin(N,pmax(0,Iudx_lo2[i-1] + newinfect_lo[i] - newdx_lo[i]))
     Iudx_hi2[i] = pmin(N,pmax(0,Iudx_hi2[i-1] + newinfect_hi[i] - newdx_hi[i]))
@@ -524,10 +601,14 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
               I_hi=I_hi,
               I_lo2=I_lo2,
               I_hi2=I_hi2,
+              I_lo_smooth=I_lo_smooth,
+              I_hi_smooth=I_hi_smooth,
               S_lo=S_lo,
               S_hi=S_hi,
               S_lo2=S_lo2,
               S_hi2=S_hi2,
+              Iudx_lo_smooth=Iudx_lo_smooth,
+              Iudx_hi_smooth=Iudx_hi_smooth,
               Iudx_lo2=Iudx_lo2,
               Iudx_hi2=Iudx_hi2,
               Idx_lo2=Idx_lo2,
@@ -541,10 +622,9 @@ get_indiana_bounds = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_
               dxrate_hi_smooth=dxrate_hi_smooth,
               dxrate_lo_smooth2=dxrate_lo_smooth2,
               dxrate_hi_smooth2=dxrate_hi_smooth2,
+              dxrate_mid_smooth2=dxrate_mid_smooth2,
               beta_lo=beta_lo,
               beta_hi=beta_hi,
-              incidencerate_lo=incidencerate_lo,
-              incidencerate_hi=incidencerate_hi,
               N=N))
 }
 
@@ -583,7 +663,7 @@ plot_infections_by_N = function() {
 
       idate = zerodate + my_daily_timescale[j]
 
-      obj = get_indiana_bounds(Ns[i], idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
+      obj = get_indiana_bounds(Ns[i], idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale)  
 
       I_lo_end[i,j] = obj$I_lo2[ndays]
       I_hi_end[i,j] = obj$I_hi2[ndays]
@@ -626,7 +706,7 @@ plot_infections_by_intvx_date = function() {
     idate = zerodate + my_daily_timescale[i]
     #print(idate)
 
-    obj = get_indiana_bounds(N, idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
+    obj = get_indiana_bounds(N, idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale)  
     I_lo_end[i] = obj$I_lo2[ndays]
     I_hi_end[i] = obj$I_hi2[ndays]
   }
@@ -692,7 +772,7 @@ plot_infections_by_rho = function() {
 
       idate = zerodate + my_daily_timescale[j]
 
-      obj = get_indiana_bounds(N, idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, rhos[i])  
+      obj = get_indiana_bounds(N, idate, idate+140, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, rhos[i], calibration_scale)  
 
       I_lo_end[i,j] = obj$I_lo2[ndays]
       I_hi_end[i,j] = obj$I_hi2[ndays]
@@ -719,7 +799,7 @@ plot_infections_by_rho = function() {
 
 get_indiana_results_text = function(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate) {
 
-  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
+  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale)  
 
   res = paste('<p>When casefinding scaleup starts on <span style=\"font-weight:bold\">', intvxday, 
               '</span>, cumulative incidence on <span style=\"font-weight:bold\">', enddate, 
@@ -744,29 +824,34 @@ get_indiana_results_text = function(N, intvxday, dday, smooth_dx, smooth_Iudx, s
 
 
 plot_indiana_bounds = function(N, intvxday, dday, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, smoother,
-                               removal_rate, plotType) {
+                               removal_rate, plotType, calibration_scale) {
 
-  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate)  
+  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale)  
 
   par(bty="n", cex=text_cex, cex.lab=text_cex, cex.axis=text_cex, 
       mar=c(2.7,4.5,1,0.0))
 
   layout(matrix(c(1,2), nrow=2), heights=c(1,3))
+  #layout(matrix(c(1,2,3), nrow=3), heights=c(1,1,3))
 
 
   plot_dx_rate(obj)
   #plot_transmission_rate(obj)
-  plot_epidemic_curves(obj, showDates, showSusc, plotType)
+  plot_epidemic_curves(obj, showDates, showSusc, plotType, calibration_scale)
 
 }
 
 ##################################################
 ##################################################
 
-plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
+plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_scale) {
 
   I_lo = obj$I_lo
   I_hi = obj$I_hi
+
+ 
+  I_lo_smooth = obj$I_lo_smooth
+  I_hi_smooth = obj$I_hi_smooth
 
   I_lo2 = obj$I_lo2
   I_hi2 = obj$I_hi2
@@ -786,8 +871,14 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
   cumdx_lo = obj$cumdx_lo
   cumdx_hi = obj$cumdx_hi
 
+  Iudx_lo_smooth = obj$Iudx_lo_smooth
+  Iudx_hi_smooth = obj$Iudx_hi_smooth
+
   R_lo = obj$R_lo
   R_hi = obj$R_hi
+
+  dx_smooth = obj$dx_smooth
+
 
   N = obj$N
 
@@ -810,7 +901,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
       legend(0, 0.9*ymax,
              c("Susceptible HIV- (actual)", 
                "Undiagnosed HIV+ (actual)",
-               "Total HIV+ (actual)", 
+               paste("Total HIV+ (actual ", calibration_scale*100,"%)", sep=""), 
                "Cumulative HIV Diagnoses (actual)"), 
              border=c(mydarkgreen,mydarkred,mydarkgray,NA),
              lty=c(0, 0, 0,1),
@@ -838,7 +929,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
 
        legend(0, 0.9*ymax,
              c("Undiagnosed HIV+ (actual)", 
-               "Total HIV+ (actual)", 
+               paste("Total HIV+ (actual ", calibration_scale*100,"%)", sep=""), 
                "Cumulative HIV Diagnoses (actual)"), 
              border=c(mydarkred,mydarkgray,NA),
              lty=c(0,0,1),
@@ -878,6 +969,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
 
    polygon(c(daily_timescale, rev(daily_timescale)), c(R_lo, rev(R_hi)), col=myblue, border=myblue)
 
+
   } else { # plotType = "raw"
 
     ymax = max(300,I_hi, I_hi2, Iudx_hi, Iudx_hi2, Idx_hi2)
@@ -891,7 +983,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
 
     legend(0, 0.9*ymax,
            c("Undiagnosed HIV+ (actual)", 
-             "Total HIV+ (actual)", 
+              paste("Total HIV+ (actual ", calibration_scale*100,"%)", sep=""), 
              "Cumulative HIV Diagnoses (actual)"),
            border=c(mydarkred, mydarkgray,NA),
            lty=c(0, 0, 1),
@@ -919,6 +1011,13 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType) {
     polygon(c(daily_timescale,rev(daily_timescale)), c(Iudx_lo,rev(Iudx_hi)), col=mydarkred, border=mydarkred)
     polygon(c(daily_timescale,rev(daily_timescale)), c(I_lo,rev(I_hi)), col=mydarkgray, border=mydarkgray)
     lines(daily_timescale, dx, lwd=2, col=mydarkpurple)
+
+   #lines(daily_timescale, Iudx_lo_smooth)
+   #lines(daily_timescale, Iudx_hi_smooth)
+   #lines(daily_timescale, I_lo_smooth)
+   #lines(daily_timescale, I_hi_smooth)
+   #lines(daily_timescale, dx_smooth)
+   #lines(daily_timescale, 30*c(0,diff(dx_smooth)), lwd=2)
 
     # projected
     polygon(c(daily_timescale,rev(daily_timescale)), c(I_lo2,rev(I_hi2)), col=mygray, border=mygray)

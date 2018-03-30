@@ -46,6 +46,7 @@ ui = fluidPage(
           hr(),
           #checkboxInput("constFOI", "Constant FOI", value=FALSE),
           sliderInput(inputId="N", "Risk population size", min = 215, max = 4000, value = 536),
+          sliderInput(inputId="calibration_scale", "Incidence uncertainty scale-up", min=1.0, max=2.0, value=1, step=0.01),
           radioButtons("removal_scenario", 
                        "Removal scenarios",
                        c("Low"="low",
@@ -73,7 +74,7 @@ ui = fluidPage(
           h3("Data"),
           verticalLayout(
             downloadLink("downloadDiagnoses", "Diagnoses by week"), 
-            downloadLink("downloadIncidence", "Estimated cumulative incidence from the CDC") 
+            downloadLink("downloadIncidence", "Estimated cumulative incidence") 
           )
         ) #,
         #tabPanel("Help",

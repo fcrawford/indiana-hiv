@@ -1,109 +1,105 @@
 library(lubridate)
 
 ##########################
-# important dates:
+# Actual intervention dates
 
-first_dx            = mdy("11/18/2014")
-investigation_begin = mdy("01/23/2015")
-emergency_declared  = mdy("03/26/2015")
-clinic_opened       = mdy("03/31/2015")
-sep_started         = mdy("04/04/2015")
+first_dx_date            = mdy("11/18/2014")
+investigation_begin_date = mdy("01/23/2015")
+intvxdate_actual_date    = mdy("03/15/2015") # actual intervention date
+emergency_declared_date  = mdy("03/26/2015")
+clinic_opened_date       = mdy("03/31/2015") # do we use this? 
+sep_started_date         = mdy("04/04/2015")
+
+##########################
+# setup and scenario dates
+
+zero_date         = mdy("04/01/2011") # Beginning of HIV incidence calculations
+intvx_actual_date = first_dx_date
+intvx_mid_date    = mdy("01/01/2013")
+intvx_early_date  = zero_date+2
+end_date          = mdy("08/11/2015") # this is last date from incidence data
+
+dateseq = seq(zero_date, end_date, by="day")
+
+###########################
+# translated days 
+
+first_dx_day            = as.numeric(first_dx_date - zero_date)
+investigation_begin_day = as.numeric(investigation_begin_date - zero_date)
+emergency_declared_day  = as.numeric(emergency_declared_date - zero_date)
+clinic_opened_day       = as.numeric(clinic_opened_date - zero_date)
+sep_started_day         = as.numeric(sep_started_date - zero_date)
+
+zero_day         = 0
+intvx_actual_day = as.numeric(intvx_actual_date - zero_date)
+intvx_mid_day    = as.numeric(intvx_mid_date - zero_date)
+intvx_early_day  = as.numeric(intvx_early_date - zero_date)
+end_day          = as.numeric(end_date - zero_date)
+
+
+dayseq = zero_day:end_day
+
+ndays = length(dayseq)
 
 
 #######################
 # load scott county diagnosis data:
 
-casesbyweek = read.csv("data/scott_county_cases_by_week.csv",stringsAsFactors=FALSE)[1:51,]
-casedates = mdy(casesbyweek$Date)
-begindate = casedates[1]
-enddate = casedates[length(casedates)]
+casesbyweek = read.csv("data/scott_county_cases_by_week.csv",stringsAsFactors=FALSE) 
+cumcases = cumsum(casesbyweek$Cases)
+casesbyweek$Date = mdy(casesbyweek$Date)
+casesbyweek$day = as.numeric(casesbyweek$Date - zero_date)
+
+dx = approx(casesbyweek$day, cumcases, xout=dayseq, method="constant")$y
+dx[is.na(dx)] = 0
 
 ########################################
+# load estimated incidence 
 
-zerodate         = mdy("04/01/2011") # plot starts here 
-sim_start_date   = begindate #mdy("06/01/2014") # start of simulations, should be before intvxdate
-intvxdate_actual = mdy("03/15/2015") # actual intervention date
-end_date         = mdy("10/01/2015") 
-dateseq = seq(zerodate, end_date, by="day")
-
-dayseq = as.numeric(difftime(dateseq, zerodate, units="days")) # measured in days since zerodate 
-
-monthdateseq = seq(zerodate, end_date, by="month")
-monthseq = as.numeric(difftime(monthdateseq, zerodate, units="days")) # for plotting
-
-sim_start_day = as.numeric(difftime(sim_start_date, zerodate, units="days"))
-sim_start_idx = which(dayseq==sim_start_day)
-
-first_dx_day = as.numeric(difftime(first_dx, zerodate, units="days"))
-first_dx_idx = which(dayseq==first_dx_day)
-
-sep_started_day = as.numeric(difftime(sep_started, zerodate, units="days"))
-sep_started_idx = which(dayseq==sep_started_day)
-
-enddate          = casedates[length(casedates)]
-casedays         = as.numeric(casedates - zerodate)
+incidence_extracted = read.csv("data/extracted_infection_curves.csv", header=FALSE)
+names(incidence_extracted) = c("Date.Decimal", "Infections")
+incidence_extracted$date = date_decimal(incidence_extracted$Date.Decimal)
+incidence_extracted$day = difftime(incidence_extracted$date, zero_date, units="days")
+incidence_extracted$Infections = pmax(incidence_extracted$Infections,0)
+ord = order(incidence_extracted$day)
+incidence_extracted = incidence_extracted[ord,]
 
 
-dat = read.csv("data/extracted_infection_curves.csv", header=FALSE)
-names(dat) = c("date", "infections")
+n_time_points = dim(incidence_extracted)[1]
 
-dat$days = difftime(mdy("01/01/2011") + (dat$date - 2011)*365, zerodate, units="days")
+infections_lo_tmp = rep(0, n_time_points)
+infections_hi_tmp = rep(NA, n_time_points)
+infections_lo_tmp[1] = incidence_extracted$Infections[1]
+infections_hi_tmp[1] = incidence_extracted$Infections[1]
 
-dat$infections = pmax(dat$infections,0)
-
-ord = order(dat$date)
-dat = dat[ord,]
-
-n = dim(dat)[1]
-
-
-infections_lo = rep(NA, n)
-infections_hi = rep(NA, n)
-infections_lo[1] = dat$infections[1]
-infections_hi[1] = dat$infections[1]
-
-for(i in 2:n) {
-  infections_hi[i] = max(c(infections_hi[1:(i-1)], dat$infections[i]))
-  infections_lo[i] = min(dat$infections[i:n])
+for(i in 2:n_time_points) {
+  infections_hi_tmp[i] = max(c(infections_hi_tmp[1:(i-1)], incidence_extracted$Infections[i]))
+  infections_lo_tmp[i] = min(incidence_extracted$Infections[i:n_time_points])
 }
 
-#scalefac = 1.5
-#infections_mean = (infections_hi+infections_lo)/2
-#infections_lo2 = pmax(0,infections_mean - (infections_mean-infections_lo)*scalefac)
-#infections_hi2 = pmin(max(dat$infections), infections_mean + (infections_hi-infections_mean)*scalefac)
+for(i in 1:(n_time_points-1)) {
+  infections_lo_tmp[i] = min(infections_lo_tmp[(i+1):n_time_points])
+}
 
-#weekseq = seq(min(dayseq), max(dayseq), by=7)
+infections_lo = approx(incidence_extracted$day, infections_lo_tmp, xout=dayseq, method="constant")$y
+infections_hi = approx(incidence_extracted$day, infections_hi_tmp, xout=dayseq, method="constant")$y
 
-calibration_lo = approx(dat$days, infections_lo, xout=dayseq, method="constant")$y
-calibration_hi = approx(dat$days, infections_hi, xout=dayseq, method="constant")$y
+#########################################
+# create month markers
 
-#calibration_lo = approx(weekseq, calibration_lo_tmp, xout=dayseq, method="constant")$y
-#calibration_hi = approx(weekseq, calibration_hi_tmp, xout=dayseq, method="constant")$y
+monthseq = mdy(c("04/01/2011", "01/01/2012", "01/01/2013", "01/01/2014", "01/01/2015", "01/01/2016"))
+monthdayseq = difftime(monthseq, zero_date, units="days")
+monthlabseq = format(monthseq, "%B %Y")
 
-
-
-cumcases = approx(casedays, cumsum(casesbyweek$Cases), xout=dayseq, method="constant")$y
-
-
-
+detail_monthseq = seq(mdy("01/10/2014"), mdy("10/01/2015"), by="month")
+detail_monthdayseq = difftime(detail_monthseq, zero_date, units="days")
+detail_monthlabseq = format(detail_monthseq, "%B %Y")
 
 
-cumcases[1:(sim_start_idx-1)] = 0 # fill in zero cum cases before first case detected. 
 
-Iudx_lo = pmax(1, calibration_lo - cumcases)
-Iudx_hi =         calibration_hi - cumcases
+#########################################
+# create raw data frame
 
-dayseq_Iudx = dayseq[!is.na(Iudx_lo)]
-
-dx = approx(dayseq, cumcases, xout=dayseq_Iudx, method="constant")$y
-
-Iudx_lo = Iudx_lo[!is.na(Iudx_lo)]
-Iudx_hi = Iudx_hi[!is.na(Iudx_hi)]
-
-dayseq_calibration = dayseq[!is.na(calibration_lo)]
-# cumcases = cumcases[!is.na(calibration_lo)]
-calibration_lo = calibration_lo[!is.na(calibration_lo)]
-calibration_hi = calibration_hi[!is.na(calibration_hi)]
-
+dat = data.frame(day=dayseq, date=dateseq, cases=dx, infections_lo=infections_lo, infections_hi=infections_hi)
 
 

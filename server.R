@@ -6,8 +6,8 @@ source("indiana-hiv-util.R")
 shinyServer(function(input, output, session) {
 
   observe({ # observe the intvxday variable; this is to correct the width if an impossible combination is entered. 
-    if(input$intvxday[1]>begindate) {
-      updateSliderInput(session, "intvxday", value=c(begindate, input$intvxday[2]))
+    if(input$intvxday[1]>first_dx_date) {
+      updateSliderInput(session, "intvxday", value=c(first_dx_date, input$intvxday[2]))
     }
   })
 
@@ -15,14 +15,14 @@ shinyServer(function(input, output, session) {
     d1 = NA
     d2 = NA
     if(input$scenario == "actual") {
-      d1 = begindate
-      d2 = enddate
+      d1 = intvx_actual_date
+      d2 = end_date
     } else if(input$scenario == "mid") {
-      d1 = mdy("01/01/2013")
-      d2 = d1+140
+      d1 = intvx_mid_date
+      d2 = d1+scaleup_peak_offset
     } else if(input$scenario == "early") {
-      d1 = zerodate+2
-      d2 = d1+140
+      d1 = intvx_early_date
+      d2 = d1+scaleup_peak_offset
     } else {
       error("invalid choice")
     }
@@ -31,11 +31,11 @@ shinyServer(function(input, output, session) {
 
   observe({ 
     if(input$removal_scenario == "low") {
-      v = 0.0038
+      v = removal_rate_low
     } else if(input$removal_scenario == "moderate") {
-      v = 0.024
+      v = removal_rate_mid
     } else if(input$removal_scenario == "high") {
-      v = 0.05
+      v = removal_rate_high
     } else {
       error("invalid choice")
     }
@@ -66,7 +66,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$epidemicPlot <- renderPlot({
-    if(input$intvxday[1]<=begindate)  {
+    if(input$intvxday[1]<=first_dx_date)  {
       plot_indiana_bounds(input$N, input$intvxday[1], input$intvxday[2], input$showDates, input$smooth_dx, 
                           input$smooth_Iudx, input$smooth_I, input$smooth_S, input$showSusc, input$smoother, 
                           input$removal_rate, input$plotType, input$calibration_scale)
@@ -94,6 +94,5 @@ shinyServer(function(input, output, session) {
       file.copy("data/extracted_infection_curves.csv", file)
     }
   )
-
 })
 

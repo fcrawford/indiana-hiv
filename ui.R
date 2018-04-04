@@ -2,7 +2,6 @@
 library(shiny)
 library(markdown)
 
-source("indiana-hiv-load.R")
 source("indiana-hiv-util.R")
 
 ui = fluidPage(
@@ -11,8 +10,8 @@ ui = fluidPage(
   # sidebar: 
   sidebarLayout(
     sidebarPanel(
-      tabsetPanel(type="tabs", 
-        tabPanel("Main",
+      tabsetPanel( #type="tabs", 
+        tabPanel("Main", fluid=TRUE,
           includeMarkdown("content/instructions.md"),
           #hr(),
           radioButtons("scenario", "Intervention date scenarios",
@@ -23,14 +22,10 @@ ui = fluidPage(
                        selected="actual"),
           sliderInput(inputId="intvxday", 
             label=NULL, #"Intervention scale-up dates", 
-            min = zerodate+2,
-            max = enddate-1,
-            value = c(begindate,enddate),
+            min=intvx_early_date,
+            max=end_date,
+            value=c(first_dx_date,end_date),
             dragRange=TRUE),
-          #hr(),
-
-          #hr(),
-          #h4("Display"),
           radioButtons("plotType", "Plot type", 
                        c("Raw Data"="raw",
                          "Model Compartments"="model"),
@@ -38,15 +33,10 @@ ui = fluidPage(
                        selected="raw"),
           checkboxInput("showDates", "Show actual response dates", value=FALSE),
           checkboxInput("showSusc", "Show susceptible population", value=FALSE) #,
-          #hr(),
-          #h4("Results"),
-          #htmlOutput("results")
         ),
-        tabPanel("Settings",
-          hr(),
-          #checkboxInput("constFOI", "Constant FOI", value=FALSE),
-          sliderInput(inputId="N", "Risk population size", min = 215, max = 4000, value = 536),
-          sliderInput(inputId="calibration_scale", "Incidence uncertainty scale-up", min=1.0, max=2.0, value=1, step=0.01),
+        tabPanel("Parameters", 
+          includeMarkdown("content/parameters.md"),
+          sliderInput(inputId="N", "Risk population size", min=N_min, max=N_max, value=N_init),
           radioButtons("removal_scenario", 
                        "Removal scenarios",
                        c("Low"="low",
@@ -56,7 +46,12 @@ ui = fluidPage(
                        selected="moderate"),
           sliderInput(inputId="removal_rate", 
                       label=NULL, #"Removal rate (per diagnosed person per day)", 
-                      min=0, max=0.1, value=0.05),
+                      min=removal_rate_min, max=removal_rate_max, value=removal_rate_init),
+          includeMarkdown("content/incidence.md"),
+          sliderInput(inputId="calibration_scale", "Incidence uncertainty factor", 
+                      min=calibration_scale_min, max=calibration_scale_max, value=calibration_scale_init, step=0.01)),
+        tabPanel("Smoothers",
+          includeMarkdown("content/smoothers.md"),
           actionButton("reset", "Reset smoothers"),
           selectInput("smoother", "Smoother", choices=smoothernames),
           sliderInput("smooth_dx", "Diagnosis smoother", step=smoothers[[1]]$step,
@@ -70,7 +65,6 @@ ui = fluidPage(
         ),
         tabPanel("About", 
           includeMarkdown("content/about.md"),
-          hr(),
           h3("Data"),
           verticalLayout(
             downloadLink("downloadDiagnoses", "Diagnoses by week"), 

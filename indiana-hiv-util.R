@@ -935,8 +935,6 @@ generate_publication_figures_and_results = function() {
                       smoother, removal_rate_init, "model", calibration_scale_init, print_results=TRUE)
   dev.off()
 
-  stop("here")
-
   pdf("fig4.pdf", width=w,height=7, bg="white")
   plot_infections_by_intvx_date()
   dev.off()

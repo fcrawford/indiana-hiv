@@ -69,7 +69,7 @@ shinyServer(function(input, output, session) {
     if(input$intvxday[1]<=first_dx_date)  {
       plot_indiana_bounds(input$N, input$intvxday[1], input$intvxday[2], input$showDates, input$smooth_dx, 
                           input$smooth_Iudx, input$smooth_I, input$smooth_S, input$showSusc, input$smoother, 
-                          input$removal_rate, input$plotType, input$calibration_scale)
+                          input$removal_rate, input$plotType, input$calibration_scale, input$beta_scale)
     }
   })
 

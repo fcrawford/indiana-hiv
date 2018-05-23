@@ -14,6 +14,10 @@ removal_rate_min = 0
 removal_rate_max = 0.1
 removal_rate_init = removal_rate_mid
 
+beta_scale_min = 0
+beta_scale_max = 1
+beta_scale_init = 1
+
 calibration_scale_min = 1
 calibration_scale_max = 2
 calibration_scale_init = 1.0

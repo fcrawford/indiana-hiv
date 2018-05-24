@@ -17,7 +17,7 @@ plot_dx_rate = function(obj) {
        type="n", 
        xlim=range(dayseq),
        ylim=c(0,ymax),
-       axes=FALSE, ylab="Diagnosis rate")
+       axes=FALSE, ylab="Case-finding rate")
   axis(1,at=monthdayseq, lab=monthlabseq)
   axis(2)
 
@@ -28,7 +28,7 @@ plot_dx_rate = function(obj) {
   lines(dayseq, dxrate_mid_smooth2, col=myorange, lwd=2)
 
   legend(0, 0.9*ymax,
-           c("Diagnosis rate (actual)", "Diagnosis rate (projected)"),
+           c("Case-finding rate (actual)", "Case-finding rate (projected)"),
            lty=c(0,1),
            lwd=c(NA,2),
            pch=c(22,NA),
@@ -37,6 +37,7 @@ plot_dx_rate = function(obj) {
            border=c(mydarkorange, myorange),
            pt.bg=c(mydarkorange, myorange),
            bg="white", bty="n", cex=text_cex)
+    mtext("A", side=3, adj=0, line=-1.0, cex=2)
   }
 
 ################################
@@ -151,7 +152,7 @@ plot_methods_illustration1 = function() {
            pt.bg=mydarkred,
            bg="white", bty="n", cex=text_cex)
 
-  mtext("B", side=3, adj=0, line=-1.2, cex=2)
+  mtext("B", side=3, adj=0, line=-1.0, cex=2)
 
 
 }
@@ -221,7 +222,7 @@ plot_methods_illustration2 = function() {
        type="n", 
        xlim=range(dayseq),
        ylim=c(0,max(dxrate_hi_smooth)),
-       axes=FALSE, ylab="Diagnosis rate")
+       axes=FALSE, ylab="Case-finding rate")
   axis(1,at=monthdayseq, lab=monthlabseq)
   axis(2)
 
@@ -237,12 +238,12 @@ plot_methods_illustration2 = function() {
   arrows(first_dx_day+scaleup_peak_offset, 0.9*ymax,
          first_dx_day+scaleup_peak_offset, obj_actual$dxrate_mid_smooth[dayseq==(first_dx_day+scaleup_peak_offset)], length=0.05)
   text(first_dx_day+scaleup_peak_offset, 0.9*ymax,
-       "Target casefinding scaleup", pos=2, cex=text_cex, offset=0.3)
+       "Target case-finding rate", pos=2, cex=text_cex, offset=0.3)
 
 
   legend(0, 0.5*max(obj_actual$dxrate_hi_smooth),
-           c("Diagnosis rate bounds (reconstructed from raw data)",
-             "Diagnosis rate midpoint"),
+           c("Case-finding rate bounds (reconstructed from raw data)",
+             "Case-finding rate midpoint"),
            border=c(myorange,NA),
            lty=c(0,1),
            lwd=c(NA,2),
@@ -259,7 +260,7 @@ plot_methods_illustration2 = function() {
        type="n", 
        xlim=range(dayseq),
        ylim=c(0,max(dxrate_hi_smooth)),
-       axes=FALSE, ylab="Diagnosis rate")
+       axes=FALSE, ylab="Case-finding rate")
   axis(1,at=monthdayseq, lab=monthlabseq)
   axis(2)
 
@@ -275,18 +276,18 @@ plot_methods_illustration2 = function() {
   arrows(intvx_mid_day+scaleup_peak_offset, 0.9*ymax,
          intvx_mid_day+scaleup_peak_offset, obj$dxrate_mid_smooth[dayseq==(intvx_mid_day+scaleup_peak_offset)], length=0.05)
   text(intvx_mid_day+scaleup_peak_offset, 0.9*ymax,
-       "Target casefinding scaleup (counterfactual)", pos=2, cex=text_cex, offset=0.3)
+       "Target case-finding rate (counterfactual)", pos=2, cex=text_cex, offset=0.3)
 
   legend(0, 0.5*max(dxrate_hi_smooth),
-          "Diagnosis rate (counterfactual)",
+          "Case-finding rate (counterfactual)",
            lty=c(1),
            lwd=2,
            col=c(myorange),
            bg="white", bty="n", cex=text_cex)
 
   #legend(0, 0.5*max(dxrate_hi_smooth),
-           #c("Diagnosis rate (reconstructed from raw data)",
-             #"Diagnosis rate (counterfactual)"),
+           #c("Case-finding rate (reconstructed from raw data)",
+             #"Case-finding rate (counterfactual)"),
            #border=c(myorange,NA),
            #lty=c(0,1),
            #pch=c(22,NA),
@@ -1023,6 +1024,8 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
     text(ndays, I_lo2[ndays], round(I_lo2[ndays]), pos=4, col=mydarkgray2, cex=text_cex)
     text(ndays, I_hi2[ndays], round(I_hi2[ndays]), pos=4, col=mydarkgray2, cex=text_cex)
 
+    mtext("B", side=3, adj=0, line=-1.2, cex=2)
+
   } else if(plotType=="calibration") {
 
     par(mfrow=c(3,1))
@@ -1048,7 +1051,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
            col=c(mydarkgray, mygray),
            pt.bg=c(mydarkgray, mygray, NA),
            bg="white", bty="n", cex=text_cex)
-
+    mtext("A", side=3, adj=0, line=-1.2, cex=2)
 
     # fig 3B
     plot(0, type="n", ylim=c(0,ymax), xlim=c(first_dx_day,max(ndays)), 
@@ -1066,6 +1069,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
            col=c(mydarkpurple, mypurple),
            pt.bg=c(NA, mypurple),
            bg="white", bty="n", cex=text_cex)
+    mtext("B", side=3, adj=0, line=-1.2, cex=2)
 
     # fig 3C
     plot(0, type="n", ylim=c(0,150), xlim=c(first_dx_day,max(ndays)), 
@@ -1083,6 +1087,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
            col=c(mydarkred, myred),
            pt.bg=c(mydarkred, myred, NA),
            bg="white", bty="n", cex=text_cex)
+    mtext("C", side=3, adj=0, line=-1.2, cex=2)
 
 
 
@@ -1173,6 +1178,8 @@ generate_publication_figures_and_results = function() {
                       smooth_I, smooth_S, showSusc, smoother, removal_rate_init, 
                       "raw", calibration_scale_init, print_results=TRUE)
   dev.off()
+
+  stop("here")
 
   pdf("fig5.pdf", width=w,height=7, bg="white")
   plot_infections_by_intvx_date()

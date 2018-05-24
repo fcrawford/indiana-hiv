@@ -42,7 +42,7 @@ plot_dx_rate = function(obj) {
 ################################
 ################################
 
-plot_methods_illustration = function() {
+plot_methods_illustration1 = function() {
 
   smooth_dx   = smoothers[[1]]$dxrange[2]
   smooth_Iudx = smoothers[[1]]$Iudxrange[2]
@@ -51,7 +51,9 @@ plot_methods_illustration = function() {
   smoother = smoothernames[1]
 
   # Get data under actual intvx
-  obj_actual = get_indiana_bounds(N_init, intvx_actual_date, end_date, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate_mid, calibration_scale_init) 
+  obj_actual = get_indiana_bounds(N_init, intvx_actual_date, end_date, 
+                                  smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, 
+                                  removal_rate_mid, calibration_scale_init) 
 
   I_lo_actual = obj_actual$I_lo
   I_hi_actual = obj_actual$I_hi
@@ -66,8 +68,127 @@ plot_methods_illustration = function() {
   dxrate_lo_smooth = obj_actual$dxrate_lo_smooth
 
 
+  par(mfrow=c(2,1), mar=c(2.7,4.5,1,1), bty="n", cex.lab=1.2, cex.axis=1.2)
+
+  #layout(matrix(c(1,2), byrow=TRUE, nrow=2), heights=c(1,2))
+
+  # Fig 1A
+
+  plot(dayseq, dx, 
+       type="n",
+       xlim=c(0,max(dayseq)), 
+       ylim=c(0,max(I_hi_actual)), 
+       axes=FALSE, ylab="People")
+  axis(1,at=monthdayseq, lab=monthlabseq)
+  axis(2)
+
+  polygon(c(dayseq,rev(dayseq)), c(I_lo_actual,rev(I_hi_actual)), col=mydarkgray, border=mydarkgray)
+  lines(dayseq, dx, lwd=2, col=mydarkblue)
+  #newcases = c(0,diff(dx))
+  #sapply(which(newcases>0), function(i) lines(c(i,i),c(0,newcases[i]), lwd=2, col=mydarkblue))
+
+  legend(0, 150,
+           c("Cumulative HIV incidence (Campbell et al, 2017)", 
+             "Cumulative HIV Diagnoses (Peters et al, 2016)"),
+           lty=c(0, 1),
+           pch=c(22,NA),
+           pt.cex=c(3,NA),
+           lwd=c(1,2),
+           col=c(mydarkgray, mydarkblue),
+           border=c(mydarkgray,NA),
+           pt.bg=c(mydarkgray, NA),
+           bg="white", bty="n", cex=text_cex)
+  mtext("A", side=3, adj=0, line=-1.2, cex=2)
+
+  # Fig 1B
+
+  plot(dayseq, dx, 
+       type="n",
+       xlim=range(dayseq),
+       ylim=c(0,max(dx)), 
+       axes=FALSE, ylab="People")
+  axis(1,at=monthdayseq, lab=monthlabseq)
+  axis(2)
+  polygon(c(dayseq,rev(dayseq)), c(Iudx_lo_actual,rev(Iudx_hi_actual)), col=mydarkred, border=mydarkred)
+  #polygon(c(dayseq,rev(dayseq)), c(Iudx_lo2_actual,rev(Iudx_hi2_actual)), col=myred, border=myred)
+  #lines(dayseq, dx_smooth, lwd=2, col=mydarkblue)
+
+
+  ymax = 170
+
+    arrows(first_dx_day, ymax*0.8,
+           first_dx_day, Iudx_hi_actual[dayseq==first_dx_day], length=0.05)
+    text(first_dx_day, ymax*0.8,
+         "First diagnosis", pos=2, cex=text_cex, offset=0.3)
+
+    arrows(investigation_begin_day, ymax*0.9,
+           investigation_begin_day, Iudx_hi_actual[dayseq==investigation_begin_day], length=0.05)
+    text(investigation_begin_day, ymax*0.9,
+         "Investigation begins", pos=2, cex=text_cex, offset=0.3)
+
+    arrows(emergency_declared_day, ymax*1.0,
+           emergency_declared_day, Iudx_hi_actual[dayseq==emergency_declared_day], length=0.05)
+    text(emergency_declared_day, ymax*1.0,
+         "Emergency declared", pos=2, cex=text_cex, offset=0.3)
+
+    arrows(clinic_opened_day, ymax*0.9,
+           clinic_opened_day, Iudx_hi_actual[dayseq==clinic_opened_day], length=0.05)
+    text(clinic_opened_day, ymax*0.9,
+         "HIV clinic opens", pos=4, cex=text_cex, offset=0.3)
+
+    arrows(sep_started_day, ymax*0.8,
+           sep_started_day, Iudx_hi_actual[dayseq==sep_started_day], length=0.05)
+    text(sep_started_day, ymax*0.8,
+         "SEP begins", pos=4, cex=text_cex, offset=0.3)
+
+    legend(0, 150,
+           "Undiagnosed HIV+",
+           border=mydarkred,
+           lty=0,
+           pch=22,
+           pt.cex=3,
+           col=mydarkred,
+           pt.bg=mydarkred,
+           bg="white", bty="n", cex=text_cex)
+
+  mtext("B", side=3, adj=0, line=-1.2, cex=2)
+
+
+}
+
+
+#####################################
+
+
+plot_methods_illustration2 = function() {
+
+  smooth_dx   = smoothers[[1]]$dxrange[2]
+  smooth_Iudx = smoothers[[1]]$Iudxrange[2]
+  smooth_I    = smoothers[[1]]$Irange[2]
+  smooth_S    = smoothers[[1]]$Srange[2]
+  smoother = smoothernames[1]
+
+    # Get data under actual intvx
+  obj_actual = get_indiana_bounds(N_init, intvx_actual_date, end_date, 
+                                  smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, 
+                                  removal_rate_mid, calibration_scale_init) 
+
+  I_lo_actual = obj_actual$I_lo
+  I_hi_actual = obj_actual$I_hi
+
+  Iudx_lo_actual = obj_actual$Iudx_lo
+  Iudx_hi_actual = obj_actual$Iudx_hi
+
+  Iudx_lo2_actual = obj_actual$Iudx_lo2
+  Iudx_hi2_actual = obj_actual$Iudx_hi2
+
+  dxrate_hi_smooth = obj_actual$dxrate_hi_smooth
+  dxrate_lo_smooth = obj_actual$dxrate_lo_smooth
+
   #dday = intvxday + scaleup_peak_offset
-  obj = get_indiana_bounds(N_init, intvx_mid_date, intvx_mid_date+scaleup_peak_offset, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate_mid, calibration_scale_init) 
+  obj = get_indiana_bounds(N_init, intvx_mid_date, intvx_mid_date+scaleup_peak_offset, 
+                           smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, 
+                           removal_rate_mid, calibration_scale_init) 
   #I_lo = obj$I_lo
   #I_hi = obj$I_hi
 
@@ -92,63 +213,9 @@ plot_methods_illustration = function() {
   dxrate_hi_smooth2 = obj$dxrate_hi_smooth2
   dxrate_lo_smooth2 = obj$dxrate_lo_smooth2
 
-  par(mar=c(2.7,4.5,1,1), bty="n", cex.lab=1.2, cex.axis=1.2)
-  layout(matrix(c(1,5,
-                  2,5,
-                  3,5,
-                  4,5), nrow=4, byrow=TRUE), widths=c(rep(5,4),2))
-  plot(dayseq, dx, 
-       type="n",
-       xlim=c(0,max(dayseq)), 
-       ylim=c(0,max(I_hi_actual)), 
-       axes=FALSE, ylab="People")
-  axis(1,at=monthdayseq, lab=monthlabseq)
-  axis(2)
+  par(mfrow=c(2,1), mar=c(2.7,4.5,1,1), bty="n", cex.lab=1.2, cex.axis=1.2)
 
-  polygon(c(dayseq,rev(dayseq)), c(I_lo_actual,rev(I_hi_actual)), col=mydarkgray, border=mydarkgray)
-  lines(dayseq, dx, lwd=2, col=mydarkblue)
-  #newcases = c(0,diff(dx))
-  #sapply(which(newcases>0), function(i) lines(c(i,i),c(0,newcases[i]), lwd=2, col=mydarkblue))
-
-  legend(0, 150,
-           c("Total HIV+ (raw data)", 
-             "Cumulative HIV Diagnoses (raw data)"),
-           lty=c(0, 1),
-           pch=c(22,NA),
-           pt.cex=c(3,NA),
-           lwd=c(1,2),
-           col=c(mydarkgray, mydarkblue),
-           border=c(mydarkgray,NA),
-           pt.bg=c(mydarkgray, NA),
-           bg="white", bty="n", cex=text_cex)
-  mtext("A", side=3, adj=0, line=-1.2, cex=2)
-  
-  plot(dayseq, dx, 
-       type="n",
-       xlim=range(dayseq),
-       ylim=c(0,max(dx)), 
-       axes=FALSE, ylab="People")
-  axis(1,at=monthdayseq, lab=monthlabseq)
-  axis(2)
-  polygon(c(dayseq,rev(dayseq)), c(Iudx_lo_actual,rev(Iudx_hi_actual)), col=mydarkred, border=mydarkred)
-  polygon(c(dayseq,rev(dayseq)), c(Iudx_lo2_actual,rev(Iudx_hi2_actual)), col=myred, border=myred)
-  lines(dayseq, dx_smooth, lwd=2, col=mydarkblue)
-
-   legend(0, 150,
-           c("Undiagnosed HIV+ (raw data)", 
-             "Undiagnosed HIV+ (projected)", 
-             "Cumulative HIV Diagnoses (smoothed)"), 
-           border=c("red", "red", NA),
-           lty=c(0, 0, 1),
-           pch=c(22,22,NA),
-           pt.cex=c(3,3,NA),
-           col=c(mydarkred, myred, myblue),
-           pt.bg=c(mydarkred, myred, NA), 
-           bg="white", bty="n", cex=text_cex)
-  mtext("B", side=3, adj=0, line=-1.2, cex=2)
-
-
-  # C
+  # Fig 2A
 
   plot(dayseq, dx, 
        type="n", 
@@ -157,7 +224,6 @@ plot_methods_illustration = function() {
        axes=FALSE, ylab="Diagnosis rate")
   axis(1,at=monthdayseq, lab=monthlabseq)
   axis(2)
-
 
   polygon(c(dayseq,rev(dayseq)), c(dxrate_lo_smooth, rev(dxrate_hi_smooth)), col=mydarkorange, border=mydarkorange)
 
@@ -179,19 +245,20 @@ plot_methods_illustration = function() {
              "Diagnosis rate midpoint"),
            border=c(myorange,NA),
            lty=c(0,1),
+           lwd=c(NA,2),
            pch=c(22,NA),
            pt.cex=c(3,NA),
            col=c(mydarkorange,myorange),
            pt.bg=c(mydarkorange,NA),
            bg="white", bty="n", cex=text_cex)
-  mtext("C", side=3, adj=0, line=-1.2, cex=2)
+  mtext("A", side=3, adj=0, line=-1.2, cex=2)
 
 
-  # D
+  # Fig 2B
   plot(dayseq, dx, 
        type="n", 
        xlim=range(dayseq),
-       ylim=1.2*range(dxrate_hi_smooth),
+       ylim=c(0,max(dxrate_hi_smooth)),
        axes=FALSE, ylab="Diagnosis rate")
   axis(1,at=monthdayseq, lab=monthlabseq)
   axis(2)
@@ -213,6 +280,7 @@ plot_methods_illustration = function() {
   legend(0, 0.5*max(dxrate_hi_smooth),
           "Diagnosis rate (counterfactual)",
            lty=c(1),
+           lwd=2,
            col=c(myorange),
            bg="white", bty="n", cex=text_cex)
 
@@ -227,55 +295,10 @@ plot_methods_illustration = function() {
            #pt.bg=c(mydarkorange,NA),
            #bg="white", bty="n", cex=text_cex)
 
-  mtext("D", side=3, adj=0, line=-1.2, cex=2)
+  mtext("B", side=3, adj=0, line=-1.2, cex=2)
 
   # Detail plot
   
-  ymax = 170
-  plot(0, type="n", ylim=c(0,ymax), xlim=c(1200,end_day), 
-       ylab="People", xlab="", lwd=2, axes=FALSE)
-
-  axis(1,at=detail_monthdayseq, lab=detail_monthlabseq)
-  axis(2)
-
-  polygon(c(dayseq,rev(dayseq)), c(Iudx_lo_actual,rev(Iudx_hi_actual)), col=mydarkred, border=mydarkred)
-
-    arrows(first_dx_day, ymax*0.8,
-           first_dx_day, Iudx_hi_actual[dayseq==first_dx_day], length=0.05)
-    text(first_dx_day, ymax*0.8,
-         "First Diagnosis", pos=2, cex=text_cex, offset=0.3)
-
-    arrows(investigation_begin_day, ymax*0.9,
-           investigation_begin_day, Iudx_hi_actual[dayseq==investigation_begin_day], length=0.05)
-    text(investigation_begin_day, ymax*0.9,
-         "Investigation Begins", pos=2, cex=text_cex, offset=0.3)
-
-    arrows(emergency_declared_day, ymax*0.8,
-           emergency_declared_day, Iudx_hi_actual[dayseq==emergency_declared_day], length=0.05)
-    text(emergency_declared_day, ymax*0.8,
-         "Emergency Declared", pos=4, cex=text_cex, offset=0.3)
-
-    arrows(clinic_opened_day, ymax*0.7,
-           clinic_opened_day, Iudx_hi_actual[dayseq==clinic_opened_day], length=0.05)
-    text(clinic_opened_day, ymax*0.7,
-         "Local HIV clinic opened", pos=4, cex=text_cex, offset=0.3)
-
-    arrows(sep_started_day, ymax*0.6,
-           sep_started_day, Iudx_hi_actual[dayseq==sep_started_day], length=0.05)
-    text(sep_started_day, ymax*0.6,
-         "SEP Begins", pos=4, cex=text_cex, offset=0.3)
-
-    legend(1200, 120,
-           "Undiagnosed HIV+ (raw data)",
-           border=mydarkred,
-           lty=0,
-           pch=22,
-           pt.cex=3,
-           col=mydarkred,
-           pt.bg=mydarkred,
-           bg="white", bty="n", cex=text_cex)
-
-  mtext("E", side=3, adj=0, line=-2, cex=2)
   
 }
 
@@ -492,7 +515,7 @@ plot_infections_by_N = function() {
   a = 0.3
   mycols = rev(c(rgb(1,0,0,alpha=a), rgb(0,1,0,alpha=a), rgb(0,0,1,alpha=a)))
 
-  Ns = seq(215,4000,length.out=10)
+  Ns = seq(215,4000,length.out=50)
 
   I_hi_end = array(NA,dim=c(length(Ns),length(intvx_dates)))
   I_lo_end = array(NA,dim=c(length(Ns),length(intvx_dates)))
@@ -522,11 +545,12 @@ plot_infections_by_N = function() {
     polygon(c(215,4000,4000,215), c(rep(obj$I_lo[ndays],2), rep(obj$I_hi[ndays],2)), col=mygray, border=mygray)
     text(1000, obj$I_lo[ndays],   
        paste("Actual infections by", format(end_date, "%B %d, %Y"), ":", 
-          round(obj$I_lo[ndays]), "-", round(obj$I_hi[ndays])), pos=3)
+          round(obj$I_lo[ndays]), "-", round(obj$I_hi[ndays])), pos=3, cex=text_cex)
 
     legend(215,ymax, c(paste("Intervention on", format(intvx_dates[j], "%B %d,%Y")), 
-                     paste("Infections on", format(end_date, "%B %d, %Y"), "under actual circumstances")),
-           pch=22, pt.cex=2, cex=1, col=c(mycols[j],mygray), pt.bg=c(mycols[j],mygray), bty="n")
+                     paste("Infections on", format(end_date, "%B %d, %Y"), 
+                     "under actual circumstances")),
+           pch=22, pt.cex=2, cex=text_cex, col=c(mycols[j],mygray), pt.bg=c(mycols[j],mygray), bty="n")
   }
 
 
@@ -552,11 +576,9 @@ plot_infections_by_intvx_date = function() {
   I_lo_end = rep(NA,length(idates))
 
   for(i in 1:length(idates)) {
-
     idate = idates[i]
-    
-
-    obj = get_indiana_bounds(N_init, idate, idate+scaleup_peak_offset, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate_init, calibration_scale_init)  
+    obj = get_indiana_bounds(N_init, idate, idate+scaleup_peak_offset, smooth_dx, 
+    smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate_init, calibration_scale_init)  
     I_lo_end[i] = obj$I_lo2[ndays]
     I_hi_end[i] = obj$I_hi2[ndays]
   }
@@ -564,22 +586,27 @@ plot_infections_by_intvx_date = function() {
   #par(mar=c(4.0,4.5,1,1.0), bty="n", cex.lab=1.2, cex.axis=1.2)
   
   ymax = max(I_hi_end)
-  par(mar=c(4,4,1,1))
-  plot(0, type="n", ylim=range(c(I_hi_end,I_lo_end)), xlim=c(0,max(ndays)), #days_to_first_dx+100), #xlim=c(dayseq[sim_start_idx],max(ndays)), 
-       ylab=paste("HIV infections by", format(end_date, "%B %d, %Y")), xlab="Counterfactual intervention date", lwd=2, axes=FALSE)
+  par(mar=c(4.0,4.5,1,1.0), bty="n", cex.lab=1.2, cex.axis=1.2)
+
+  plot(0, type="n", ylim=range(c(I_hi_end,I_lo_end)), xlim=c(0,first_dx_day+70), 
+       ylab=paste("HIV infections by", format(end_date, "%B %d, %Y")), 
+       xlab="Counterfactual intervention date", lwd=2, axes=FALSE)
 
 
-  axis(1,at=monthdayseq, lab=monthlabseq)
+  axis(1,at=monthdayseq[1:5], lab=monthlabseq[1:5])
   axis(2)
 
 
   polygon(c(idays,rev(idays)), c(I_hi_end, rev(I_lo_end)), col=mygray, border="gray")
 
-  points(first_dx_day, obj$I_lo[ndays], pch=22, cex=2, col="black", bg="black")
+  points(first_dx_day, (obj$I_lo[ndays]+obj$I_lo[ndays])/2, 
+         pch=3, cex=2, col="black", bg="black")
 
-  text(first_dx_day, obj$I_hi[ndays], 
-       paste("Actual infections by", format(end_date, "%B %d, %Y"), ":", round(obj$I_lo[ndays]), "-", round(obj$I_hi[ndays])), 
-       pos=3)
+  text(first_dx_day, (obj$I_lo[ndays]+obj$I_lo[ndays])/2, 
+       paste("Actual infections by", format(end_date, "%B %d, %Y"), ":", 
+              round(obj$I_lo[ndays]), "-", round(obj$I_hi[ndays])), 
+       cex=text_cex,
+       pos=2,offset=1)
 
 
 }
@@ -644,7 +671,8 @@ plot_infections_by_incidence_factor = function() {
              paste("Infections on", format(end_date, "%B %d, %Y"),
                    "under actual circumstances")),
            pch=22,
-           pt.cex=2, cex=1, 
+           cex=text_cex,
+           pt.cex=2, 
            col=c(mycols[j], mygray),
            pt.bg=c(mycols[j],mygray), 
            bty="n")
@@ -709,12 +737,12 @@ plot_infections_by_rho = function() {
     polygon(c(0,0.1,0.1,0), c(rep(obj$I_lo[ndays],2), rep(obj$I_hi[ndays],2)), col=mygray, border=mygray)
     text(0.05, obj$I_hi[ndays], 
        paste("Actual infections by", format(end_date, "%B %d, %Y"), ":", round(obj$I_lo[ndays]), "-", 
-              round(obj$I_hi[ndays])),
+              round(obj$I_hi[ndays]), cex=text_cex),
        pos=3)
     legend(0.04,ymax, c(paste("Intervention on", format(intvx_dates[j],"%B %d, %Y")), 
                         paste("Infections on", format(end_date, "%B %d, %Y"), "under actual circumstances")
                         ),
-           pch=22, pt.cex=2, cex=1, col=c(mycols[j],mygray), pt.bg=c(mycols[j],mygray), bty="n")
+           pch=22, pt.cex=2, cex=text_cex, col=c(mycols[j],mygray), pt.bg=c(mycols[j],mygray), bty="n")
   }
 
 }
@@ -773,7 +801,7 @@ plot_infections_by_beta_scale = function() {
     legend(0.00,ymax, c(paste("Intervention on", format(intvx_dates[j],"%B %d, %Y")), 
                         paste("Infections on", format(end_date, "%B %d, %Y"), "under actual circumstances")
                         ),
-           pch=22, pt.cex=2, cex=1, col=c(mycols[j],mygray), pt.bg=c(mycols[j],mygray), bty="n")
+           pch=22, pt.cex=2, cex=text_cex, col=c(mycols[j],mygray), pt.bg=c(mycols[j],mygray), bty="n")
   }
 
 }
@@ -786,9 +814,11 @@ plot_infections_by_beta_scale = function() {
 
 plot_indiana_bounds = function(N, intvxday, dday, showDates, smooth_dx, 
                                smooth_Iudx, smooth_I, smooth_S, showSusc, smoother,
-                               removal_rate, plotType, calibration_scale, beta_scale=1, print_results=FALSE) {
+                               removal_rate, plotType, calibration_scale, beta_scale=1, 
+                               print_results=FALSE) {
 
-  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, smooth_S, smoother, removal_rate, calibration_scale, beta_scale)  
+  obj = get_indiana_bounds(N, intvxday, dday, smooth_dx, smooth_Iudx, smooth_I, 
+                           smooth_S, smoother, removal_rate, calibration_scale, beta_scale)  
 
   if(print_results) {
     cat("Intervention on", format(intvxday, "%B %d, %Y"), "\n")
@@ -808,12 +838,14 @@ plot_indiana_bounds = function(N, intvxday, dday, showDates, smooth_dx,
   par(bty="n", cex=text_cex, cex.lab=text_cex, cex.axis=text_cex, 
       mar=c(2.7,4.5,1,0.0))
 
-  layout(matrix(c(1,2), nrow=2), heights=c(1,3))
   #layout(matrix(c(1,2,3), nrow=3), heights=c(1,1,3))
 
 
-  plot_dx_rate(obj)
-  #plot_transmission_rate(obj)
+  if(plotType!="calibration") {
+    layout(matrix(c(1,2), nrow=2), heights=c(1,3))
+    plot_dx_rate(obj)
+    #plot_transmission_rate(obj)
+  }
   plot_epidemic_curves(obj, showDates, showSusc, plotType, calibration_scale)
 
 }
@@ -867,7 +899,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
     if(showSusc) {
       ymax = N
     } else {
-      ymax = max(300,I_hi, I_hi2, Iudx_hi, Iudx_hi2, Idx_hi2)
+      ymax = max(c(I_hi, I_hi2, Iudx_hi, Iudx_hi2, Idx_hi2))
     }
 
     plot(0, type="n", ylim=c(0,ymax), xlim=c(0,max(ndays)), #xlim=c(dayseq[sim_start_idx],max(ndays)), 
@@ -950,9 +982,9 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
    polygon(c(dayseq, rev(dayseq)), c(R_lo, rev(R_hi)), col=myblue, border=myblue)
 
 
-  } else { # plotType = "raw"
+  } else if(plotType=="raw") { 
 
-    ymax = max(300,I_hi, I_hi2, Iudx_hi, Iudx_hi2, Idx_hi2)
+    ymax = max(I_hi, I_hi2, Iudx_hi, Iudx_hi2, Idx_hi2)
 
      plot(0, type="n", ylim=c(0,ymax), xlim=c(0,max(ndays)), #xlim=c(dayseq[sim_start_idx],max(ndays)), 
        ylab="People", xlab="", lwd=2, axes=FALSE)
@@ -962,48 +994,100 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
     axis(2)
 
     legend(0, 0.9*ymax,
-           c("Undiagnosed HIV+ (actual)", 
-              paste("Total HIV+ (actual ", calibration_scale*100,"%)", sep=""), 
-             "Cumulative HIV Diagnoses (actual)"),
-           border=c(mydarkred, mydarkgray,NA),
-           lty=c(0, 0, 1),
-           pch=c(22,22,NA),
-           pt.cex=c(3,3,3),
-           lwd=c(1,1,2),
-           col=c(mydarkred, mydarkgray, mydarkpurple),
-           pt.bg=c(mydarkred, mydarkgray, NA),
+           c("Undiagnosed HIV+ (raw data)", 
+             "Undiagnosed HIV+ (model projection)", 
+             "Cumulative HIV incidence (raw data)",
+             "Cumulative HIV incidence (model projection)"),
+           border=c(mydarkred, myred,mydarkgray,mygray),
+           pch=22,
+           pt.cex=3,
+           col=c(mydarkred, myred,mydarkgray,mygray),
+           pt.bg=c(mydarkred, myred,mydarkgray,mygray),
            bg="white", bty="n", cex=text_cex)
 
-    legend(0, 0.7*ymax,
-           c("Undiagnosed HIV+ (projected)", 
-             "Total HIV+ (projected)", 
-             "Cumulative HIV Diagnoses (projected)"), 
-           lty=0,
-           pch=22,
-           col=c(myred, mygray, myblue), 
-           border=c(myred, mygray, mypurple),
-           pt.bg=c(myred, mygray, mypurple), 
-           pt.cex=c(3,3,3),
-           bg="white", bty="n", cex=text_cex)
 
 
     # actual data: 
     polygon(c(dayseq,rev(dayseq)), c(Iudx_lo,rev(Iudx_hi)), col=mydarkred, border=mydarkred)
     polygon(c(dayseq,rev(dayseq)), c(I_lo,rev(I_hi)), col=mydarkgray, border=mydarkgray)
-    lines(dayseq, dx, lwd=2, col=mydarkpurple)
+    #lines(dayseq, dx, lwd=2, col=mydarkpurple)
 
 
     # projected
     polygon(c(dayseq,rev(dayseq)), c(I_lo2,rev(I_hi2)), col=mygray, border=mygray)
     polygon(c(dayseq,rev(dayseq)), c(Iudx_lo2,rev(Iudx_hi2)), col=myred, border=myred)
-    polygon(c(dayseq,rev(dayseq)), c(cumdx_lo,rev(cumdx_hi)), col=mypurple, border=mypurple)
+    #polygon(c(dayseq,rev(dayseq)), c(cumdx_lo,rev(cumdx_hi)), col=mypurple, border=mypurple)
 
     points(ndays, I_lo2[ndays], pch=3, col=mydarkgray2)
     points(ndays, I_hi2[ndays], pch=3, col=mydarkgray2)
     text(ndays, I_lo2[ndays], round(I_lo2[ndays]), pos=4, col=mydarkgray2, cex=text_cex)
     text(ndays, I_hi2[ndays], round(I_hi2[ndays]), pos=4, col=mydarkgray2, cex=text_cex)
 
+  } else if(plotType=="calibration") {
+
+    par(mfrow=c(3,1))
+
+    ymax = max(I_hi, I_hi2, Iudx_hi, Iudx_hi2, Idx_hi2)
+
+    # Fig 3A
+    plot(0, type="n", ylim=c(0,ymax), xlim=c(first_dx_day,max(ndays)), 
+       ylab="People", xlab="", lwd=2, axes=FALSE)
+    axis(1,at=detail_monthdayseq, lab=detail_monthlabseq)
+    axis(2)
+    polygon(c(dayseq,rev(dayseq)), 
+            c(I_lo,rev(I_hi)), 
+            col=mydarkgray, border=mydarkgray)
+    polygon(c(dayseq,rev(dayseq)), 
+            c(I_lo2,rev(I_hi2)), 
+            col=mygray, border=mygray)
+    legend(first_dx_day, 0.9*ymax,
+           c("Cumulative HIV incidence (raw data)", 
+             "Cumulative HIV incidence (model projection)"), 
+           pch=22,
+           pt.cex=3,
+           col=c(mydarkgray, mygray),
+           pt.bg=c(mydarkgray, mygray, NA),
+           bg="white", bty="n", cex=text_cex)
+
+
+    # fig 3B
+    plot(0, type="n", ylim=c(0,ymax), xlim=c(first_dx_day,max(ndays)), 
+       ylab="People", xlab="", lwd=2, axes=FALSE)
+    axis(1,at=detail_monthdayseq, lab=detail_monthlabseq)
+    axis(2)
+    lines(dayseq, dx, lwd=2, col=mydarkpurple)
+    polygon(c(dayseq,rev(dayseq)), c(cumdx_lo,rev(cumdx_hi)), col=mypurple, border=mypurple)
+    legend(first_dx_day, 0.9*ymax,
+           c("Cumulative HIV diagnoses (raw data)", 
+             "Cumulative HIV diagnoses (model projection)"), 
+           pch=c(NA,22),
+           pt.cex=c(NA,3),
+           lwd=c(2,NA),
+           col=c(mydarkpurple, mypurple),
+           pt.bg=c(NA, mypurple),
+           bg="white", bty="n", cex=text_cex)
+
+    # fig 3C
+    plot(0, type="n", ylim=c(0,150), xlim=c(first_dx_day,max(ndays)), 
+       ylab="People", xlab="", lwd=2, axes=FALSE)
+    axis(1,at=detail_monthdayseq, lab=detail_monthlabseq)
+    axis(2)
+    polygon(c(dayseq,rev(dayseq)), c(Iudx_lo,rev(Iudx_hi)), col=mydarkred, border=mydarkred)
+    polygon(c(dayseq,rev(dayseq)), c(Iudx_lo2,rev(Iudx_hi2)), col=myred, border=myred)
+
+    legend(sep_started_day, 150,
+           c("Undiagnosed HIV+ (raw data)", 
+             "Undiagnosed HIV+ (model projection)"), 
+           pch=22,
+           pt.cex=3,
+           col=c(mydarkred, myred),
+           pt.bg=c(mydarkred, myred, NA),
+           bg="white", bty="n", cex=text_cex)
+
+
+
   }
+
 
   abline(h=N, lty="dashed")
 
@@ -1060,43 +1144,51 @@ generate_publication_figures_and_results = function() {
   smooth_S    = smoothers[[1]]$Srange[2]
   smoother = smoothernames[1]
   showDates = FALSE
-  showSusc = TRUE
+  showSusc = FALSE
 
   w = 16
 
   #################
   # main text figures
 
-  pdf("fig1.pdf", width=w, height=9, bg="white")
-  plot_methods_illustration()
+  pdf("fig1.pdf", width=w, height=7, bg="white")
+  plot_methods_illustration1()
   dev.off()
 
-  pdf("fig2.pdf", width=w,height=9, bg="white")
+  pdf("fig2.pdf", width=w, height=7, bg="white")
+  plot_methods_illustration2()
+  dev.off()
+
+  pdf("fig3.pdf", width=w/1.8,height=9, bg="white")
   plot_indiana_bounds(N_init, intvx_actual_date, end_date, showDates, smooth_dx, smooth_Iudx, 
                       smooth_I, smooth_S, showSusc, 
-                      smoother, removal_rate_init, "model", calibration_scale_init, print_results=TRUE)
+                      smoother, removal_rate_init, "calibration", calibration_scale_init, 
+                      print_results=TRUE)
   dev.off()
 
-  pdf("fig3.pdf", width=w,height=9, bg="white")
+  pdf("fig4.pdf", width=w,height=9, bg="white")
   d1 = intvx_mid_date
   d2 = d1+scaleup_peak_offset
-  plot_indiana_bounds(N_init, d1, d2, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, 
-                      smoother, removal_rate_init, "model", calibration_scale_init, print_results=TRUE)
+  plot_indiana_bounds(N_init, d1, d2, showDates, smooth_dx, smooth_Iudx, 
+                      smooth_I, smooth_S, showSusc, smoother, removal_rate_init, 
+                      "raw", calibration_scale_init, print_results=TRUE)
   dev.off()
 
-
-  pdf("fig4.pdf", width=w,height=7, bg="white")
+  pdf("fig5.pdf", width=w,height=7, bg="white")
   plot_infections_by_intvx_date()
   dev.off()
+
 
   ##############
   # supplementary figures:
 
-  pdf("figs1.pdf", width=w,height=7, bg="white")
+  pdf("figs1.pdf", width=w,height=9, bg="white")
   d1 = intvx_early_date
   d2 = d1+scaleup_peak_offset
-  plot_indiana_bounds(N_init, d1, d2, showDates, smooth_dx, smooth_Iudx, smooth_I, smooth_S, showSusc, 
-                      smoother, removal_rate_init, "model", calibration_scale_init, print_results=TRUE)
+  plot_indiana_bounds(N_init, d1, d2, showDates, smooth_dx, 
+                      smooth_Iudx, smooth_I, smooth_S, showSusc, 
+                      smoother, removal_rate_init, "raw", calibration_scale_init, 
+                      print_results=TRUE)
   dev.off()
   
 

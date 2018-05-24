@@ -91,9 +91,9 @@ monthseq = mdy(c("04/01/2011", "01/01/2012", "01/01/2013", "01/01/2014", "01/01/
 monthdayseq = difftime(monthseq, zero_date, units="days")
 monthlabseq = format(monthseq, "%B %Y")
 
-detail_monthseq = seq(mdy("01/10/2014"), mdy("10/01/2015"), by="month")
+detail_monthseq = seq(mdy("11/10/2014"), mdy("09/01/2015"), by="month")
 detail_monthdayseq = difftime(detail_monthseq, zero_date, units="days")
-detail_monthlabseq = format(detail_monthseq, "%B %Y")
+detail_monthlabseq = format(detail_monthseq, "%b %Y")
 
 
 

@@ -548,7 +548,7 @@ plot_infections_by_N = function() {
        paste("Actual infections by", format(end_date, "%B %d, %Y"), ":", 
           round(obj$I_lo[ndays]), "-", round(obj$I_hi[ndays])), pos=3, cex=text_cex)
 
-    legend(215,ymax, c(paste("Intervention on", format(intvx_dates[j], "%B %d,%Y")), 
+    legend(215,ymax, c(paste("Intervention on", format(intvx_dates[j], "%B %d, %Y")), 
                      paste("Infections on", format(end_date, "%B %d, %Y"), 
                      "under actual circumstances")),
            pch=22, pt.cex=2, cex=text_cex, col=c(mycols[j],mygray), pt.bg=c(mycols[j],mygray), bty="n")
@@ -1178,8 +1178,6 @@ generate_publication_figures_and_results = function() {
                       smooth_I, smooth_S, showSusc, smoother, removal_rate_init, 
                       "raw", calibration_scale_init, print_results=TRUE)
   dev.off()
-
-  stop("here")
 
   pdf("fig5.pdf", width=w,height=7, bg="white")
   plot_infections_by_intvx_date()

@@ -5,7 +5,7 @@ This web application shows the dynamics of the HIV outbreak in Scott County, Ind
 
 #### References 
 
-Gonsalves, G.S. and Crawford, F.W. 2018. Dynamics of the HIV outbreak and response in Scott County, Indiana, 2011-2015. 
+Gonsalves, G.S. and Crawford, F.W. 2018. Dynamics of the HIV outbreak and response in Scott County, Indiana, 2011-2015: A modeling study. 
 
 Peters, P.J., Pontones, P., Hoover, K.W., Patel, M.R., Galang, R.R., Shields, J., Blosser, S.J., Spiller, M.W., Combs, B., Switzer, W.M. and Conrad, C., 2016. HIV infection linked to injection use of oxymorphone in Indiana, 2014–2015. New England Journal of Medicine, 375 (3), 229-239.
 

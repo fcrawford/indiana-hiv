@@ -1141,7 +1141,7 @@ plot_epidemic_curves = function(obj, showDates, showSusc, plotType, calibration_
 #############################################
 
 
-generate_publication_figures_and_results = function() {
+generate_publication_figures_and_results = function(mainFigsOnly=FALSE) {
   
   smooth_dx   = smoothers[[1]]$dxrange[2]
   smooth_Iudx = smoothers[[1]]$Iudxrange[2]
@@ -1152,6 +1152,15 @@ generate_publication_figures_and_results = function() {
   showSusc = FALSE
 
   w = 16
+
+  ###############
+  # an additional figure for presentations: 
+  pdf("model_compartments.pdf", width=w,height=9, bg="white")
+  plot_indiana_bounds(N_init, intvx_actual_date, end_date, showDates, smooth_dx, smooth_Iudx, 
+                      smooth_I, smooth_S, showSusc=TRUE, smoother, removal_rate_init, 
+                      plotType="model", calibration_scale_init, print_results=TRUE)
+  dev.off()
+
 
   #################
   # main text figures
@@ -1183,6 +1192,8 @@ generate_publication_figures_and_results = function() {
   plot_infections_by_intvx_date()
   dev.off()
 
+  
+  if(mainFigsOnly) return()
 
   ##############
   # supplementary figures:
